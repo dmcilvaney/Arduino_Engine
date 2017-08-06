@@ -1,80 +1,37 @@
-//#include "Simulation.h"
+#include "Simulation.h"
 #include "Vector.h"
 
-
+//#define TESTMODE
 #define TESTNUM  10000
 
 void setup() {
   Serial.begin(115200);
 
-/*
-  Serial.print("20000:");
-  FixedPoint temp = FROM_INT(20000);
-  Serial.println(temp);
-  Serial.print("0.99:");
-  FixedPoint mult = FROM_FLOAT(0.9999999);
-  Serial.println(mult);
-  mult = FROM_FLOAT(20000);
-  Serial.println(mult);
-  Serial.println(TO_FLOAT(mult));
+#ifdef TESTMODE
+  test();
+#else
+  initSimulationEngine();
+  Object* a = simulationGetFreeObject();
+  a->m_inUse = true;
+  a->m_objectType = PARTICLE;
+  a->m_position = Vector3D(FROM_INT(5),FROM_INT(5),FROM_INT(5));
 
-  Serial.println(TO_FLOAT(sRoot(FROM_INT(4))));
-  Serial.println(TO_FLOAT(sRoot(FROM_INT(5))));
-  Serial.println(TO_FLOAT(sRoot(FROM_INT(13))));
-  Serial.println(TO_FLOAT(sRoot(FROM_FLOAT(20000))));
+  Object* b = simulationGetFreeObject();
+  b->m_inUse = true;
+  b->m_objectType = PARTICLE;
+  b->m_position = Vector3D(FROM_INT(7),FROM_INT(5),FROM_INT(5));
+#endif
+}
+
+void loop() {
+#ifndef TESTMODE
+  stepSim();
+  delay(20);
+#endif
+}
 
 
-  uint32_t startTime = millis();
-
-  for (uint32_t i = 0; i < TESTNUM; i++) {
-    break;
-    //Serial.print("-");
-    //Serial.println(temp);
-    temp = MULT(temp, mult);
-    //Serial.println(temp);
-    if (temp < FROM_INT(1)) {
-      //Serial.print(temp);
-      //Serial.print(" +5 -> ");
-      temp = temp + FROM_INT(5);
-      //Serial.println(temp);
-      }
-    //temp = DIV(temp, FROM_INT(2));
-    //temp = temp + FROM_INT(2);
-  }
-  uint32_t endTime = millis();
-
-  Serial.print("Time with my code=");
-  Serial.println(((endTime - startTime) / (float)TESTNUM));
-  Serial.println(TO_FLOAT(temp));
-  Serial.println(temp);
-
-  startTime = millis();
-  float temp2 = 2000000;
-  for (uint32_t j = 0; j < TESTNUM; j++) {
-    break;
-    //temp2 = temp2 / 2.0;
-    //temp2 = temp2 + 2.0;
-    temp2 = temp2 * 0.9999999;
-    //if (temp2 < 1) {
-    //  temp2 += 5;
-    //}
-
-  }
-  endTime = millis();
-  Serial.print("Time with float=");
-  Serial.println(((endTime - startTime) / (float)TESTNUM));
-
-  Serial.println(temp2);
-  Serial.println("Done Setup");
-  Serial.println();
-  Serial.println();
-  */
-
-  //Object c1 = buildCircle(Vector3D(FROM_INT(10UL), FROM_INT(10UL), 0), FROM_INT(10), ONE, Vector3D(FROM_INT(10), 0, 0),FROM_INT(10),0,DIV(ONE,FROM_INT(8)));
-  //Object c2 = buildCircle(Vector3D(FROM_INT(1UL), FROM_INT(9UL), 0), ONE + ONE, ONE, Vector3D(FROM_INT(-5), -2, 0),FROM_INT(-1),0,DIV(ONE,FROM_INT(8)));
-  //addObject(c1);
-  //addObject(c2);
-
+void test() {
   Vector3D v1(FROM_INT(1),FROM_INT(2),FROM_INT(3));
   Vector3D v2(FROM_INT(3),FROM_INT(2),FROM_INT(1));
 
@@ -127,15 +84,3 @@ void setup() {
   Serial.println(((endTime - startTime) / (float)TESTNUM));
 }
 
-void loop() {
-  /*
-  //Serial.println("Loop");
-  unsigned long currentTime = millis();
-  stepSim();
-  unsigned long endTime = millis();
-  Serial.print("Time:");
-  Serial.print(endTime - currentTime);
-  printBall();
-  delay(20);
-  */
-}

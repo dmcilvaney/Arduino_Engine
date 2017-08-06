@@ -148,19 +148,3 @@ FixedPoint sRoot(FixedPoint num) {
   return result << (SHIFT_VAL - SQRT_SHIFT_VAL);
 }
 
-enum ObjectType {POINT, BOX, CIRCLE};
-
-struct CircleData {
-  FixedPoint radius;
-};
-
-struct BoxData {
-  FixedPoint height;
-  FixedPoint width;
-};
-
-union ObjectData {
-  CircleData m_circleData;
-  BoxData m_boxData;
-};
-
