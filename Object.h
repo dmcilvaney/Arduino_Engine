@@ -6,13 +6,12 @@
 
 #include "Particle.h"
 
-void integrateObject(Object *obj, const FixedPoint& timeDelta) {
-
-  if(obj->m_invMass <= 0) {
+void integrateObject(Object &obj, const FixedPoint& timeDelta) {
+  if(obj.m_invMass <= 0) {
     return;
   }
   
-  switch (obj->m_objectType) {
+  switch (obj.m_objectType) {
     case PARTICLE:
       particleIntegrate(obj, timeDelta);
       break;
@@ -21,6 +20,6 @@ void integrateObject(Object *obj, const FixedPoint& timeDelta) {
   }
 
   //Clear all forces.
-  obj->m_force = Vector3D(0,0,0);
+  obj.m_force = Vector3D(0,0,0);
 }
 

@@ -3,9 +3,13 @@
 
 //#define TESTMODE
 #define TESTNUM  10000
+//#define DEBUG
 
 void setup() {
   Serial.begin(115200);
+
+  Serial.println("Size:");
+  Serial.println((int)sizeof(Object));
 
 #ifdef TESTMODE
   test();
@@ -14,12 +18,24 @@ void setup() {
   Object* a = simulationGetFreeObject();
   a->m_inUse = true;
   a->m_objectType = PARTICLE;
-  a->m_position = Vector3D(FROM_INT(5),FROM_INT(5),FROM_INT(5));
+  a->m_position = Vector3D(FROM_INT(5),FROM_INT(15),FROM_INT(5));
+  a->m_invMass = ONE;
+
+  
+
+  Serial.println((unsigned long)a);
 
   Object* b = simulationGetFreeObject();
   b->m_inUse = true;
   b->m_objectType = PARTICLE;
-  b->m_position = Vector3D(FROM_INT(7),FROM_INT(5),FROM_INT(5));
+  b->m_position = Vector3D(FROM_INT(7),FROM_INT(15),FROM_INT(5));
+  b->m_invMass = FROM_INT(1);
+
+  buildGravityForce(simulationGetFreeForce(), a);
+  buildGravityForce(simulationGetFreeForce(), b, FROM_INT(2));
+
+  Serial.println((unsigned long)b);
+  
 #endif
 }
 

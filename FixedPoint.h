@@ -76,6 +76,7 @@ inline FixedPoint divide(FixedPointLarge num, FixedPoint denom);
 const FixedPoint EPSILON = DIV(FROM_INT(1), FROM_INT(30));
 const FixedPoint ONE = FROM_INT(1);
 const FixedPoint ZERO = 0;
+const FixedPoint G = DIV(FROM_INT(-981), FROM_INT(100));
 
 inline FixedPoint multiply(FixedPoint m1, FixedPoint m2) {
   bool negative = false;
