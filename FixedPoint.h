@@ -68,6 +68,7 @@ inline FixedPoint divide(FixedPointLarge num, FixedPoint denom);
 
 #define MULT(a,b) multiply(a, b)
 #define DIV(a,b) divide(a, b)
+#define ABS(a) (a > 0 ? a : a * -1)
 #define FROM_INT(a) (((FixedPoint)a) * ((FixedPoint)1 << SHIFT_VAL))
 #define FROM_FLOAT(a) ((FixedPoint)(a * ((FixedPoint)1 << SHIFT_VAL)))
 #define TO_INT(a) ((int)((a < 0) ? ((a * -1) >> SHIFT_VAL)*-1 : (a >> SHIFT_VAL)))

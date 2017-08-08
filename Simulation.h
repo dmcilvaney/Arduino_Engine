@@ -38,6 +38,7 @@ ForceObject* simulationGetFreeForce() {
   return NULL;
 }
 
+static int loopNum = 0;
 static void stepSim() {
   unsigned long currentTime = millis();
   int timeDelta = (int)(currentTime - sim.m_lastStepTime);
@@ -48,9 +49,17 @@ static void stepSim() {
     Serial.println(timeDelta);
 #endif
     sim.m_lastStepTime = currentTime;
-    render(sim);
+    if(loopNum++ > 4) {
+      render(sim);
+      loopNum = 0;
+    }
     FixedPoint sec = DIV(FROM_INT(timeDelta), FROM_INT(1000));
     for(int i = 0; i < sim.m_numForces; i++) {
+#ifdef DEBUG
+      Serial.print("Checking force ");
+      Serial.println(i);
+      Serial.println((int)&sim.m_worldForces[i]);
+#endif
       if(sim.m_worldForces[i].m_generator != NULL) {
         sim.m_worldForces[i].m_generator(sim.m_worldForces[i], sec);
       }

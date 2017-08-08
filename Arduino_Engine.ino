@@ -19,11 +19,7 @@ void setup() {
   a->m_inUse = true;
   a->m_objectType = PARTICLE;
   a->m_position = Vector3D(FROM_INT(5),FROM_INT(15),FROM_INT(5));
-  a->m_invMass = ONE;
-
-  
-
-  Serial.println((unsigned long)a);
+  a->m_invMass = 0; 
 
   Object* b = simulationGetFreeObject();
   b->m_inUse = true;
@@ -32,10 +28,8 @@ void setup() {
   b->m_invMass = FROM_INT(1);
 
   buildGravityForce(simulationGetFreeForce(), a);
-  buildGravityForce(simulationGetFreeForce(), b, FROM_INT(2));
-
-  Serial.println((unsigned long)b);
-  
+  buildGravityForce(simulationGetFreeForce(), b);
+  buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(3));  
 #endif
 }
 

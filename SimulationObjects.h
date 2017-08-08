@@ -5,7 +5,7 @@
 enum ObjectType {PARTICLE};
 
 #define NUM_OBJECTS 5
-#define NUM_FORCES 50
+#define NUM_FORCES 20
 
 struct Particle {
   int i;
@@ -26,7 +26,7 @@ struct Object {
   FixedPoint m_invMass;
   
 
-  FixedPoint m_damping;
+  FixedPoint m_damping = DIV(FROM_INT(99),FROM_INT(100));
 
   ObjectType m_objectType;
   
