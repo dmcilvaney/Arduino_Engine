@@ -1,11 +1,12 @@
 #pragma once
 
 #include "ForceTypes.h"
+#include "Defines.h"
 
 enum ObjectType {PARTICLE};
 
 #define NUM_OBJECTS 5
-#define NUM_FORCES 20
+#define NUM_FORCES 10
 
 struct Particle {
   int i;

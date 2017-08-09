@@ -3,13 +3,14 @@
 
 //#define TESTMODE
 #define TESTNUM  10000
-//#define DEBUG
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(250000);
 
+#ifdef DEBUG
   Serial.println("Size:");
   Serial.println((int)sizeof(Object));
+#endif
 
 #ifdef TESTMODE
   test();
@@ -19,17 +20,29 @@ void setup() {
   a->m_inUse = true;
   a->m_objectType = PARTICLE;
   a->m_position = Vector3D(FROM_INT(5),FROM_INT(15),FROM_INT(5));
-  a->m_invMass = 0; 
+  a->m_invMass = ONE; 
 
   Object* b = simulationGetFreeObject();
   b->m_inUse = true;
   b->m_objectType = PARTICLE;
-  b->m_position = Vector3D(FROM_INT(7),FROM_INT(15),FROM_INT(5));
-  b->m_invMass = FROM_INT(1);
+  b->m_position = Vector3D(FROM_INT(7),FROM_INT(26),FROM_INT(5));
+  b->m_invMass = DIV(FROM_INT(1),FROM_INT(2));
 
   buildGravityForce(simulationGetFreeForce(), a);
   buildGravityForce(simulationGetFreeForce(), b);
-  buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(3));  
+  
+  Vector3D v(FROM_INT(10),FROM_INT(14),FROM_INT(5));
+  buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(3), false);
+  buildSpringForce(simulationGetFreeForce(), a, &(b->m_position), ONE, FROM_INT(3), false);
+  buildSpringForce(simulationGetFreeForce(), a, &v, FROM_INT(1), FROM_INT(5), true);
+
+  Object* c = simulationGetFreeObject();
+  c->m_inUse = true;
+  c->m_objectType = PARTICLE;
+  c->m_position = v;
+  c->m_invMass = 0;
+
+  //buildSpringForce(simulationGetFreeForce(), a, &(c->m_position), ONE, FROM_INT(15), false);
 #endif
 }
 
@@ -42,6 +55,7 @@ void loop() {
 
 
 void test() {
+  Serial.println("TEST MODE!");
   Vector3D v1(FROM_INT(1),FROM_INT(2),FROM_INT(3));
   Vector3D v2(FROM_INT(3),FROM_INT(2),FROM_INT(1));
 

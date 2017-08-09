@@ -1,13 +1,24 @@
 #pragma once
 
 #include "FixedPoint.h"
+#include "Defines.h"
 
 #define ADD_VECT(a,b) Vector3D(a.m_x + b.m_x, a.m_y+b.m_y, a.m_z + b.m_z)
 #define MULT_VECT_SCAL(a,b) Vector3D(MULT(a.m_x, b), MULT(a.m_y, b), MULT(a.m_z, b))
 
 struct Vector3D
 {  
-  Vector3D(FixedPoint x = 0, FixedPoint y = 0, FixedPoint z = 0)
+  FixedPoint m_x = 0;
+  FixedPoint m_y = 0;
+  FixedPoint m_z = 0;
+
+  Vector3D()
+    : m_x(0),
+      m_y(0),
+      m_z(0) {
+  }
+
+  Vector3D(FixedPoint x, FixedPoint y, FixedPoint z)
     : m_x(x),
       m_y(y),
       m_z(z) {
@@ -96,10 +107,6 @@ struct Vector3D
   Vector3D operator-(const Vector3D& vector) const {
     return Vector3D(m_x - vector.m_x, m_y - vector.m_y, m_z - vector.m_z);
   }
-  
-  FixedPoint m_x;
-  FixedPoint m_y;
-  FixedPoint m_z;
 };
 
 

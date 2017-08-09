@@ -3,7 +3,7 @@
 #include "FixedPoint.h"
 #include "Vector.h"
 #include "SimulationObjects.h"
-
+#include "Defines.h"
 #include "Particle.h"
 
 void integrateObject(Object &obj, const FixedPoint& timeDelta) {

@@ -1,7 +1,6 @@
-
-#define FIXED_SIZE 32
-
 #pragma once
+
+#include "Defines.h"
 
 #if FIXED_SIZE == 8
   #define FixedPoint int8_t

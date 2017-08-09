@@ -3,6 +3,7 @@
 #include "SimulationObjects.h"
 #include "FixedPoint.h"
 #include "Vector.h"
+#include "Defines.h"
 
 void particleIntegrate(Object& obj, const FixedPoint& timeDelta) {
 #ifdef DEBUG
