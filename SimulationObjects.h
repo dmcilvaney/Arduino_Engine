@@ -3,13 +3,14 @@
 #include "ForceTypes.h"
 #include "Defines.h"
 
-enum ObjectType {PARTICLE};
+enum ObjectType {NONE, PARTICLE};
 
 #define NUM_OBJECTS 5
-#define NUM_FORCES 10
+#define NUM_FORCES 6
+#define NUM_COLLISIONS 10
 
 struct Particle {
-  int i;
+  FixedPoint m_radius;
 };
 
 
@@ -27,13 +28,13 @@ struct Object {
   FixedPoint m_invMass;
   
 
-  FixedPoint m_damping = DIV(FROM_INT(99),FROM_INT(100));
+  FixedPoint m_damping = ONE - EPSILON;
 
   ObjectType m_objectType;
   
   union {
     struct Particle m_particleData;
-  } m_objectData;
+  };
 };
 
 struct ForceObject {
@@ -45,10 +46,21 @@ struct ForceObject {
   };
 };
 
+struct ContactObject {
+  Object* m_c1;
+  Object* m_c2;
+
+  FixedPoint m_restitution;
+  Vector3D m_contactNormal;
+  FixedPoint m_penetration;
+};
+
 struct Simulation {
   int m_numObjects = NUM_OBJECTS;
   int m_numForces = NUM_FORCES;
+  int m_numContacts = NUM_COLLISIONS;
   Object m_worldObjects[NUM_OBJECTS];
   ForceObject m_worldForces[NUM_FORCES];
+  ContactObject m_worldContacts[NUM_COLLISIONS];
   unsigned long m_lastStepTime = 0;
 };

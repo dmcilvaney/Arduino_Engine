@@ -73,10 +73,13 @@ inline FixedPoint divide(FixedPointLarge num, FixedPoint denom);
 #define TO_INT(a) ((int)((a < 0) ? ((a * -1) >> SHIFT_VAL)*-1 : (a >> SHIFT_VAL)))
 #define TO_FLOAT(a) (a / ((float)(1UL << SHIFT_VAL)))
 
-const FixedPoint EPSILON = DIV(FROM_INT(1), FROM_INT(30));
+
 const FixedPoint ONE = FROM_INT(1);
 const FixedPoint ZERO = 0;
+const FixedPoint POINT_FIVE = DIV(ONE, FROM_INT(2));
+const FixedPoint EPSILON = DIV(ONE, FROM_INT(1000));
 const FixedPoint G = DIV(FROM_INT(-981), FROM_INT(100));
+
 
 inline FixedPoint multiply(FixedPoint m1, FixedPoint m2) {
   bool negative = false;

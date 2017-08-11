@@ -13,6 +13,8 @@
 #define SCALE_X 2
 #define SCALE_Y 1
 
+#define FRAME_DELAY 100
+
 inline void particleDraw(const Object &obj, bool screen[]) {
     FixedPoint x = obj.m_position.m_x;
     FixedPoint y = obj.m_position.m_y;
@@ -45,20 +47,15 @@ void objectDraw(const Object &obj, bool screen[]) {
   }  
 }
 
-int line = -2;
 bool screen[SCREEN_X*SCREEN_Y];
-unsigned long lastUpdate = 0;
 
 void drawScreen() {
-  if (line == -2) {
-    Serial.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-  } else if (line == -1) {
-    for(int x = 0; x < SCREEN_X+2; x++) {
-      Serial.print('=');
-    }
-    Serial.println();
-  } else if (line < SCREEN_Y ){
-    int y = SCREEN_Y - 1 - line;
+  Serial.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+  for(int x = 0; x < SCREEN_X+2; x++) {
+    Serial.print('=');
+  }
+  Serial.println();
+  for (int y = SCREEN_Y - 1; y>= 0; y--) {
     Serial.print('|');
     for (int x = 0; x < SCREEN_X; x++) {
       int arrayLoc = SCREEN_LOC(x, y);
@@ -70,43 +67,36 @@ void drawScreen() {
       }
     }  
     Serial.println('|');
-    
-  } else if(line == SCREEN_Y) {
-    for(int x = 0; x < SCREEN_X+2; x++) {
-      Serial.print('=');
-    }
-    Serial.println();
-    line = -2;
-    lastUpdate = millis();
-    return;
   }
-  line++;
+  
+  for(int x = 0; x < SCREEN_X+2; x++) {
+    Serial.print('=');
+  }
+  Serial.println();
 }
 
-
-
-
+unsigned long lastUpdate = 0;
 void render(const Simulation& sim) {
-  int timeDelta = ( millis() - lastUpdate);
-  if(timeDelta < 1000) {
+
+  if(millis() - lastUpdate < FRAME_DELAY) {
     return;
   }
-  if(line == -2){    
-    for(int i = 0; i < SCREEN_X*SCREEN_Y; i++) {
-      screen[i] = false;
-    }
-    for (int i = 0; i < NUM_OBJECTS; i++) {
-#ifdef DEBUG
-      Serial.print("Checking object ");
-      Serial.print(i);
-#endif
-      if (sim.m_worldObjects[i].m_inUse) {
-        objectDraw(sim.m_worldObjects[i], screen);
-      }
-    }
-    Serial.println();
+  
+  for(int i = 0; i < SCREEN_X*SCREEN_Y; i++) {
+    screen[i] = false;
   }
+  for (int i = 0; i < NUM_OBJECTS; i++) {
+#ifdef DEBUG
+    Serial.print("Checking object ");
+    Serial.print(i);
+#endif
+    if (sim.m_worldObjects[i].m_inUse) {
+      objectDraw(sim.m_worldObjects[i], screen);
+    }
+  }
+  Serial.println();
   drawScreen();
+  lastUpdate = millis();
 }
 
 

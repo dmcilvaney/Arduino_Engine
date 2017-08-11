@@ -5,6 +5,7 @@
 #include "ForceGenerators.h"
 #include "Renderer.h"
 #include "Defines.h"
+#include "Collisions.h"
 
 #define MIN_TIME_STEP 10
 
@@ -48,41 +49,62 @@ ForceObject* simulationGetFreeForce() {
   return NULL;
 }
 
-static int loopNum = 0;
+int stepTime = 0;
+
 static void stepSim() {
   unsigned long currentTime = millis();
   int timeDelta = (int)(currentTime - sim.m_lastStepTime);
-  //int timeDelta = 20;
-  if(timeDelta >= MIN_TIME_STEP) {
+
+  if(timeDelta < MIN_TIME_STEP) {
+    render(sim);
+    return;
+  }
+
+  int stepDelta = min(stepTime + 2, timeDelta);
+  
 #ifdef DEBUG    
-    Serial.println("Step Sim");
-    Serial.print("Time:");
-    Serial.println(timeDelta);
+  Serial.println("Step Sim");
+  Serial.print("Time:");
+  Serial.println(timeDelta);
 #endif
-    sim.m_lastStepTime = currentTime;
-    //if(loopNum++ > 10) {
-      render(sim);
-    //  loopNum = 0;
-    //}
-    FixedPoint sec = DIV(FROM_INT(timeDelta), FROM_INT(1000));
-    for(int i = 0; i < sim.m_numForces; i++) {
+  sim.m_lastStepTime += stepDelta;
+  FixedPoint sec = DIV(FROM_INT(stepDelta), FROM_INT(1000));
+  for(int i = 0; i < sim.m_numForces; i++) {
 #ifdef DEBUG
-      Serial.print("Checking force ");
-      Serial.println(i);
-      Serial.println((int)&sim.m_worldForces[i]);
+    Serial.print("Checking force ");
+    Serial.println(i);
+    Serial.println((int)&sim.m_worldForces[i]);
 #endif
-      if(sim.m_worldForces[i].m_generator != NULL) {
-        sim.m_worldForces[i].m_generator(sim.m_worldForces[i], sec);
-      }
-    }
-    
-    for(int i = 0; i < sim.m_numObjects; i++) {
-      Object& obj = sim.m_worldObjects[i];
-      if (obj.m_inUse) {
-        integrateObject(obj, sec);
-      }          
+    if(sim.m_worldForces[i].m_generator != NULL) {
+      sim.m_worldForces[i].m_generator(sim.m_worldForces[i], sec);
     }
   }
+  
+  for(int i = 0; i < sim.m_numObjects; i++) {
+    Object& obj = sim.m_worldObjects[i];
+    if (obj.m_inUse) {
+      integrateObject(obj, sec);
+    }          
+  }
+
+  int collisionNum = 0;
+  for(int i = 0; i < sim.m_numObjects; i++) {
+    for(int j = i+1; j < sim.m_numObjects; j++) {
+      if(sim.m_worldObjects[i].m_inUse && sim.m_worldObjects[j].m_inUse) {
+        //Serial.print("Collision:");
+       // Serial.print(i);
+        //Serial.print(',');
+        //Serial.println(j);
+        if( checkIfCollision(&(sim.m_worldContacts[collisionNum]), &(sim.m_worldObjects[i]), &(sim.m_worldObjects[j]))) {
+          collisionNum++;
+        }
+      }
+    }
+  }
+  for(int i = 0; i < collisionNum; i++) {
+    resolveContact(sim.m_worldContacts[i], sec);
+  }
+  stepTime = millis() - currentTime;
 }
 
 

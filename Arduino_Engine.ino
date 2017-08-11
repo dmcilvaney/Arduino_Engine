@@ -16,31 +16,46 @@ void setup() {
   test();
 #else
   initSimulationEngine();
+  /*
   Object* a = simulationGetFreeObject();
   a->m_inUse = true;
   a->m_objectType = PARTICLE;
   a->m_position = Vector3D(FROM_INT(5),FROM_INT(15),FROM_INT(5));
   a->m_invMass = ONE; 
+  a->m_particleData.m_radius = ONE;
 
   Object* b = simulationGetFreeObject();
   b->m_inUse = true;
   b->m_objectType = PARTICLE;
   b->m_position = Vector3D(FROM_INT(7),FROM_INT(26),FROM_INT(5));
   b->m_invMass = DIV(FROM_INT(1),FROM_INT(2));
+  b->m_particleData.m_radius = ONE;
 
   buildGravityForce(simulationGetFreeForce(), a);
   buildGravityForce(simulationGetFreeForce(), b);
   
   Vector3D v(FROM_INT(10),FROM_INT(14),FROM_INT(5));
-  buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(3), false);
-  buildSpringForce(simulationGetFreeForce(), a, &(b->m_position), ONE, FROM_INT(3), false);
+  buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(10), false);
+  buildSpringForce(simulationGetFreeForce(), a, &(b->m_position), ONE, FROM_INT(10), false);
   buildSpringForce(simulationGetFreeForce(), a, &v, FROM_INT(1), FROM_INT(5), true);
+  */
+
+  Vector3D v(FROM_INT(10),FROM_INT(14),FROM_INT(5));
 
   Object* c = simulationGetFreeObject();
   c->m_inUse = true;
   c->m_objectType = PARTICLE;
   c->m_position = v;
   c->m_invMass = 0;
+  c->m_particleData.m_radius = ONE;
+
+  Object* d = simulationGetFreeObject();
+  d->m_inUse = true;
+  d->m_objectType = PARTICLE;
+  d->m_position = v + Vector3D(ONE,ONE+ONE+ONE+ONE,0);
+  d->m_invMass = DIV(FROM_INT(1),FROM_INT(2));
+  d->m_particleData.m_radius = ONE+ONE+ONE;
+  buildGravityForce(simulationGetFreeForce(), d, POINT_FIVE);
 
   //buildSpringForce(simulationGetFreeForce(), a, &(c->m_position), ONE, FROM_INT(15), false);
 #endif
@@ -49,7 +64,6 @@ void setup() {
 void loop() {
 #ifndef TESTMODE
   stepSim();
-  delay(20);
 #endif
 }
 

@@ -56,3 +56,38 @@ void particleSpringForce(const ForceObject& fo, const FixedPoint& timeDelta, con
   fo.m_obj->m_force += force;
 }
 
+bool particleCheckIfCollision(ContactObject* newContact, Object* o1, Object* o2) {
+  bool isCollision = false;
+  switch (o2->m_objectType) {
+    case PARTICLE: {
+      Vector3D seperation = (o1->m_position - o2->m_position);
+ //     seperation.print();
+ //     Serial.print(TO_FLOAT(seperation.magnitude2()));
+ //     Serial.print(',');
+ //     Serial.println(TO_FLOAT((MULT(o1->m_particleData.m_radius,o1->m_particleData.m_radius) + MULT(o2->m_particleData.m_radius,o2->m_particleData.m_radius))));
+      if (seperation.magnitude2() < (MULT(o1->m_particleData.m_radius,o1->m_particleData.m_radius) + MULT(o2->m_particleData.m_radius,o2->m_particleData.m_radius))) {
+        isCollision = true;
+        seperation.normalize();
+        newContact->m_contactNormal = seperation;       
+      }
+      break;
+    }
+    default:
+      break;
+  }
+  if(isCollision) {
+    newContact->m_c1 = o1;
+    newContact->m_c2 = o2;
+    newContact->m_restitution = POINT_FIVE;
+  }
+  return isCollision;
+}
+
+  ObjectType m_type1;
+  Object* m_c1;
+  ObjectType m_type2;
+  Object* m_c2;
+
+  FixedPoint m_restitution;
+  Vector3D m_contactNormal;
+  FixedPoint m_penetration;
