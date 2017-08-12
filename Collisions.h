@@ -2,6 +2,7 @@
 
 #include "Particle.h"
 #include "Defines.h"
+#include "debug.h"
 
 bool checkIfCollision(ContactObject* newContact, Object* o1, Object* o2) {
     if(o1->m_invMass == 0) {
@@ -22,46 +23,60 @@ bool checkIfCollision(ContactObject* newContact, Object* o1, Object* o2) {
     }
 }
 
-FixedPoint calcSeperatingVelocity(const ContactObject& contact) {
+void calcSeperatingVelocity(ContactObject& contact) {
   Vector3D velocity = contact.m_c1->m_velocity;
   if( contact.m_c2 != NULL ) {
     velocity -= contact.m_c2->m_velocity;
   }
-  return velocity * contact.m_contactNormal;
+  contact.m_seperatingVelocity = velocity * contact.m_contactNormal;
 }
 
 void resolveContact(const ContactObject& contact, const FixedPoint& timeDelta) {
   //Serial.println("Reslove");
+  
   //Fix velocity
-  FixedPoint seperatingVelocity = calcSeperatingVelocity(contact);
-  //Serial.print("SepVelocity:");
-  //Serial.println(TO_FLOAT(seperatingVelocity));
-  if(seperatingVelocity < 0) {
-    FixedPoint newVelocity = MULT(-seperatingVelocity, contact.m_restitution);
-    FixedPoint delta = newVelocity - seperatingVelocity;
-    FixedPoint totalMass = contact.m_c1->m_invMass + (contact.m_c2 != NULL ? contact.m_c2->m_invMass : 0);
+  const FixedPoint& seperatingVelocity = contact.m_seperatingVelocity;
+  debug("SepVelocity:",DEBUG_COLLISION);
+  debugln(TO_FLOAT(seperatingVelocity),DEBUG_COLLISION);
 
-    //Serial.print("Total mass:");
-    //Serial.println(TO_FLOAT(totalMass));
-    
-    //Serial.print("Delta:");
-    //Serial.println(TO_FLOAT(delta));
-    
-
-    if (totalMass > 0) {
+  FixedPoint totalMass = contact.m_c1->m_invMass + (contact.m_c2 != NULL ? contact.m_c2->m_invMass : 0);
+  if (totalMass > 0) {    
+    if(seperatingVelocity < 0) {
+      debug("Restitution:",DEBUG_COLLISION);
+      //Serial.println(TO_FLOAT(contact.m_restitution));
+      FixedPoint newVelocity = MULT(-seperatingVelocity, contact.m_restitution);
+      FixedPoint delta = newVelocity - seperatingVelocity;    
+  
+      debug("Total mass:",DEBUG_COLLISION);
+      debugln(TO_FLOAT(totalMass),DEBUG_COLLISION);    
+      debug("Delta:",DEBUG_COLLISION);
+      debugln(TO_FLOAT(delta),DEBUG_COLLISION);      
+  
       FixedPoint impulse = DIV(delta, totalMass);
       Vector3D impulseVector = contact.m_contactNormal * impulse;
 
       contact.m_c1->m_velocity += impulseVector * contact.m_c1->m_invMass;
-      //Serial.print("C1 impulse:");
-      //(impulseVector * contact.m_c1->m_invMass).print();
+      debug("C1 impulse:" + (impulseVector * contact.m_c1->m_invMass).toString(), DEBUG_COLLISION);
       if( contact.m_c2 != NULL ) {
-        contact.m_c2->m_velocity += impulseVector * -(contact.m_c1->m_invMass);
-        //Serial.print("C1 impulse:");
-        //(impulseVector * contact.m_c1->m_invMass).print();
+        contact.m_c2->m_velocity += impulseVector * -(contact.m_c2->m_invMass);
+        debug("C2 impulse:" + (impulseVector * contact.m_c2->m_invMass).toString(), DEBUG_COLLISION);
       }
-      //Serial.println();
-    }    
-  }  
+      debugln(DEBUG_COLLISION);
+    }  
+    //Fix Penetration
+    debug("Pen:", DEBUG_COLLISION);
+    debugln(TO_FLOAT(contact.m_penetration), DEBUG_COLLISION);
+    if(contact.m_penetration > 0) {
+      Vector3D movementVectorPerMass = contact.m_contactNormal * DIV(-contact.m_penetration, totalMass);
+      contact.m_c1->m_position += movementVectorPerMass * -(contact.m_c1->m_invMass);
+      debug("C1 position update:" + (movementVectorPerMass * -(contact.m_c1->m_invMass)).toString(), DEBUG_COLLISION);
+      if( contact.m_c2 != NULL ) {
+        contact.m_c2->m_position += movementVectorPerMass * -(contact.m_c2->m_invMass);
+        debug("C2 position update:" + (movementVectorPerMass * -(contact.m_c2->m_invMass)).toString(), DEBUG_COLLISION);
+      }
+      debugln(DEBUG_COLLISION);
+    }
+  }
+  
 }
 

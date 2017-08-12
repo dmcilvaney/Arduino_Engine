@@ -1,22 +1,17 @@
 #include "Simulation.h"
 #include "Vector.h"
+#include "debug.h"
 
 //#define TESTMODE
 #define TESTNUM  10000
 
 void setup() {
   Serial.begin(250000);
-
-#ifdef DEBUG
-  Serial.println("Size:");
-  Serial.println((int)sizeof(Object));
-#endif
-
 #ifdef TESTMODE
   test();
 #else
   initSimulationEngine();
-  /*
+  
   Object* a = simulationGetFreeObject();
   a->m_inUse = true;
   a->m_objectType = PARTICLE;
@@ -34,28 +29,36 @@ void setup() {
   buildGravityForce(simulationGetFreeForce(), a);
   buildGravityForce(simulationGetFreeForce(), b);
   
-  Vector3D v(FROM_INT(10),FROM_INT(14),FROM_INT(5));
+  Vector3D v(FROM_INT(10),FROM_INT(11),FROM_INT(5));
   buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(10), false);
   buildSpringForce(simulationGetFreeForce(), a, &(b->m_position), ONE, FROM_INT(10), false);
   buildSpringForce(simulationGetFreeForce(), a, &v, FROM_INT(1), FROM_INT(5), true);
-  */
+  
 
-  Vector3D v(FROM_INT(10),FROM_INT(14),FROM_INT(5));
+  //Vector3D v(FROM_INT(10),FROM_INT(10),FROM_INT(5));
 
   Object* c = simulationGetFreeObject();
   c->m_inUse = true;
   c->m_objectType = PARTICLE;
   c->m_position = v;
   c->m_invMass = 0;
-  c->m_particleData.m_radius = ONE;
+  c->m_particleData.m_radius = FROM_INT(4);
 
-  Object* d = simulationGetFreeObject();
+  /*Object* e = simulationGetFreeObject();
+  e->m_inUse = true;
+  e->m_objectType = PARTICLE;
+  e->m_position = v + Vector3D(FROM_INT(2),0,0);
+  e->m_invMass = 0;
+  e->m_particleData.m_radius = ONE;*/
+
+  /*Object* d = simulationGetFreeObject();
   d->m_inUse = true;
   d->m_objectType = PARTICLE;
-  d->m_position = v + Vector3D(ONE,ONE+ONE+ONE+ONE,0);
+  d->m_position = v + Vector3D(ONE,FROM_INT(6),0);
   d->m_invMass = DIV(FROM_INT(1),FROM_INT(2));
-  d->m_particleData.m_radius = ONE+ONE+ONE;
+  d->m_particleData.m_radius = ONE;
   buildGravityForce(simulationGetFreeForce(), d, POINT_FIVE);
+  */
 
   //buildSpringForce(simulationGetFreeForce(), a, &(c->m_position), ONE, FROM_INT(15), false);
 #endif

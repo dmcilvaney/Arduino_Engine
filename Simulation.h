@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Defines.h"
 #include "Collisions.h"
+#include "debug.h"
 
 #define MIN_TIME_STEP 10
 
@@ -87,22 +88,41 @@ static void stepSim() {
     }          
   }
 
-  int collisionNum = 0;
-  for(int i = 0; i < sim.m_numObjects; i++) {
-    for(int j = i+1; j < sim.m_numObjects; j++) {
-      if(sim.m_worldObjects[i].m_inUse && sim.m_worldObjects[j].m_inUse) {
-        //Serial.print("Collision:");
-       // Serial.print(i);
-        //Serial.print(',');
-        //Serial.println(j);
-        if( checkIfCollision(&(sim.m_worldContacts[collisionNum]), &(sim.m_worldObjects[i]), &(sim.m_worldObjects[j]))) {
-          collisionNum++;
+  int totalCollisions = 0;
+  while(totalCollisions < 20) {
+    int collisionNum = 0;
+    int worstCollision = -1;
+    FixedPoint worstCollisionVelocity = FP_MAX;
+    for(int i = 0; i < sim.m_numObjects; i++) {
+      for(int j = i+1; j < sim.m_numObjects; j++) {
+        if(sim.m_worldObjects[i].m_inUse && sim.m_worldObjects[j].m_inUse) {
+          //Serial.print("Collision:");
+         // Serial.print(i);
+          //Serial.print(',');
+          //Serial.println(j);
+          if( checkIfCollision(&(sim.m_worldContacts[collisionNum]), &(sim.m_worldObjects[i]), &(sim.m_worldObjects[j]))) {
+            calcSeperatingVelocity(sim.m_worldContacts[collisionNum]);
+            debug("Coll: SepV:", DEBUG_SIM);
+            debug(TO_FLOAT(sim.m_worldContacts[collisionNum].m_seperatingVelocity), DEBUG_SIM);
+            debug(" Distance:", DEBUG_SIM);
+            debug(TO_FLOAT(sim.m_worldContacts[collisionNum].m_penetration), DEBUG_SIM);
+            debugln(DEBUG_SIM);
+            if(sim.m_worldContacts[collisionNum].m_seperatingVelocity < 0 && sim.m_worldContacts[collisionNum].m_seperatingVelocity < worstCollisionVelocity) {
+              debugln("Adding collision", DEBUG_SIM);
+              worstCollisionVelocity = sim.m_worldContacts[collisionNum].m_seperatingVelocity;
+              worstCollision = collisionNum;              
+              collisionNum++;
+            }            
+          }
         }
       }
     }
-  }
-  for(int i = 0; i < collisionNum; i++) {
-    resolveContact(sim.m_worldContacts[i], sec);
+    if(collisionNum == 0) {
+      break;
+    }
+    resolveContact(sim.m_worldContacts[worstCollision], sec);
+    totalCollisions++;
+    debugln("Worst collision:" + String(worstCollision), DEBUG_SIM);
   }
   stepTime = millis() - currentTime;
 }

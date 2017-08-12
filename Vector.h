@@ -57,6 +57,17 @@ struct Vector3D
     Serial.print(")");
   }
 
+    String toString() const {
+    String output = "(";
+    output += TO_FLOAT(m_x);
+    output += ",";
+    output += TO_FLOAT(m_y);
+    output += ",";
+    output += TO_FLOAT(m_z);
+    output += ")";
+    return output;
+  }
+
 
   //  ***(scalar)
   void operator*=(const FixedPoint scal) {

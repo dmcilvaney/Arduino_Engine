@@ -6,35 +6,40 @@
 #include "Simulation.h"
 #include "Defines.h"
 
-#define SCREEN_X 40
+#define SCREEN_X 20
 #define SCREEN_Y 20
 #define SCREEN_SCALE FROM_INT(100)
 #define SCREEN_LOC(x, y) y*SCREEN_X + x
-#define SCALE_X 2
+#define SCALE_X 1
 #define SCALE_Y 1
 
 #define FRAME_DELAY 100
 
 inline void particleDraw(const Object &obj, bool screen[]) {
-    FixedPoint x = obj.m_position.m_x;
-    FixedPoint y = obj.m_position.m_y;
+  FixedPoint x = obj.m_position.m_x;
+  FixedPoint y = obj.m_position.m_y;
 #ifdef DEBUG
-    Serial.print("FP X:");
-    Serial.println(TO_INT(x));
-    Serial.print("FP Y:");
-    Serial.println(TO_INT(y));
+  Serial.print("FP X:");
+  Serial.println(TO_INT(x));
+  Serial.print("FP Y:");
+  Serial.println(TO_INT(y));
 #endif
-    int screenX = TO_INT(x) * SCALE_X;
-    int screenY = TO_INT(y) * SCALE_Y;
+  int screenX = TO_INT(x) ;
+  int screenY = TO_INT(y) * SCALE_Y;
 #ifdef DEBUG
-    Serial.print(screenX);
-    Serial.print(",");
-    Serial.println(screenY);
+  Serial.print(screenX);
+  Serial.print(",");
+  Serial.println(screenY);
 #endif
 
-    if(screenX >= 0 && screenX < SCREEN_X && screenY >=0 && screenY < SCREEN_Y) {
-      screen[SCREEN_LOC(screenX, screenY)] = true;
+  FixedPoint radius = obj.m_particleData.m_radius;
+  for(int screenX = (TO_INT(x) - TO_INT(radius))* SCALE_X; screenX <= (TO_INT(x) + TO_INT(radius))* SCALE_X; screenX++) {
+    for(int screenY = (TO_INT(y) - TO_INT(radius))* SCALE_Y; screenY <= (TO_INT(y) + TO_INT(radius))* SCALE_Y; screenY++) {
+      if(screenX >= 0 && screenX < SCREEN_X && screenY >=0 && screenY < SCREEN_Y) {
+        screen[SCREEN_LOC(screenX, screenY)] = true;
+      }
     }
+  }
 }
 
 void objectDraw(const Object &obj, bool screen[]) {

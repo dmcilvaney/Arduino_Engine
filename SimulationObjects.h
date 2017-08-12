@@ -6,8 +6,8 @@
 enum ObjectType {NONE, PARTICLE};
 
 #define NUM_OBJECTS 5
-#define NUM_FORCES 6
-#define NUM_COLLISIONS 10
+#define NUM_FORCES 5
+#define NUM_COLLISIONS 3
 
 struct Particle {
   FixedPoint m_radius;
@@ -53,6 +53,7 @@ struct ContactObject {
   FixedPoint m_restitution;
   Vector3D m_contactNormal;
   FixedPoint m_penetration;
+  FixedPoint m_seperatingVelocity;
 };
 
 struct Simulation {
