@@ -1,13 +1,14 @@
 #pragma once
 
-#include "ForceTypes.h"
+#include "ForceAndConstraintTypes.h"
 #include "Defines.h"
 
 enum ObjectType {NONE, PARTICLE};
 
-#define NUM_OBJECTS 5
-#define NUM_FORCES 5
-#define NUM_COLLISIONS 3
+#define NUM_OBJECTS 4
+#define NUM_FORCES 10
+#define NUM_COLLISIONS 10
+#define NUM_CONSTRAINTS 3
 
 struct Particle {
   FixedPoint m_radius;
@@ -35,6 +36,14 @@ struct Object {
   union {
     struct Particle m_particleData;
   };
+
+  void print() {
+    Serial.print("Object at ");
+    m_position.print();
+    Serial.print(" moving at ");
+    m_velocity.print();
+    Serial.println();
+  }
 };
 
 struct ForceObject {
@@ -56,12 +65,25 @@ struct ContactObject {
   FixedPoint m_seperatingVelocity;
 };
 
+struct ConstraintObject {
+  void (*m_generator)(ConstraintObject&);
+  Object* m_obj1 = NULL;
+  Object* m_obj2 = NULL;  
+  union {
+    RodConstraintData m_rodData;
+  };
+};
+
 struct Simulation {
   int m_numObjects = NUM_OBJECTS;
   int m_numForces = NUM_FORCES;
   int m_numContacts = NUM_COLLISIONS;
+  int m_numConstraints = NUM_CONSTRAINTS;
+  
   Object m_worldObjects[NUM_OBJECTS];
   ForceObject m_worldForces[NUM_FORCES];
+  int m_activeContacts = 0;
   ContactObject m_worldContacts[NUM_COLLISIONS];
+  ConstraintObject m_worldConstraints[NUM_CONSTRAINTS];
   unsigned long m_lastStepTime = 0;
 };

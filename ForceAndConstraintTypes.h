@@ -20,4 +20,15 @@ struct SpringForceData {
   FixedPoint m_springConstant;
   FixedPoint m_restLength;
 };
+struct RodConstraintData {
+  FixedPoint m_length;
+};
+struct LeverConstraintData {
+  FixedPoint m_leverLength;
+  FixedPoint m_leverPivotPosition;
+  union {
+    void* m_pivotPoint;
+    Vect m_pivotFixedPoint;
+  };
+};
 

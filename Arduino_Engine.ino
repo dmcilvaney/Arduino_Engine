@@ -2,8 +2,15 @@
 #include "Vector.h"
 #include "debug.h"
 
-//#define TESTMODE
+#define TESTMODE
 #define TESTNUM  10000
+
+
+Object* p1;
+Object* p2;
+Object* p3;
+Object* c;
+Vector3D v;
 
 void setup() {
   Serial.begin(250000);
@@ -12,37 +19,60 @@ void setup() {
 #else
   initSimulationEngine();
   
-  Object* a = simulationGetFreeObject();
-  a->m_inUse = true;
-  a->m_objectType = PARTICLE;
-  a->m_position = Vector3D(FROM_INT(5),FROM_INT(15),FROM_INT(5));
-  a->m_invMass = ONE; 
-  a->m_particleData.m_radius = ONE;
+  p1 = simulationGetFreeObject();
+  p1->m_inUse = true;
+  p1->m_objectType = PARTICLE;
+  p1->m_position = Vector3D(FROM_INT(10),FROM_INT(0),FROM_INT(0));
+  p1->m_velocity = Vector3D(0,0,0);
+  p1->m_invMass = ONE; 
+  p1->m_particleData.m_radius = ONE;
 
-  Object* b = simulationGetFreeObject();
-  b->m_inUse = true;
-  b->m_objectType = PARTICLE;
-  b->m_position = Vector3D(FROM_INT(7),FROM_INT(26),FROM_INT(5));
-  b->m_invMass = DIV(FROM_INT(1),FROM_INT(2));
-  b->m_particleData.m_radius = ONE;
+  p2 = simulationGetFreeObject();
+  p2->m_inUse = true;
+  p2->m_objectType = PARTICLE;
+  p2->m_position = Vector3D(FROM_INT(0),FROM_INT(3),FROM_INT(0));
+  p2->m_velocity = Vector3D(0,0,0);
+  p2->m_invMass = ONE;
+  p2->m_particleData.m_radius = ONE;
 
-  buildGravityForce(simulationGetFreeForce(), a);
-  buildGravityForce(simulationGetFreeForce(), b);
+  p3 = simulationGetFreeObject();
+  p3->m_inUse = true;
+  p3->m_objectType = PARTICLE;
+  p3->m_position = Vector3D(FROM_INT(2),FROM_INT(0),FROM_INT(0));
+  p3->m_velocity = Vector3D(0,0,0);
+  p3->m_invMass = DIV(FROM_INT(1),FROM_INT(5));
+  p3->m_particleData.m_radius = ONE;
+
+  buildGravityForce(simulationGetFreeForce(), p1);
+  buildGravityForce(simulationGetFreeForce(), p2);
+  buildGravityForce(simulationGetFreeForce(), p3);
   
-  Vector3D v(FROM_INT(10),FROM_INT(11),FROM_INT(5));
-  buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(10), false);
-  buildSpringForce(simulationGetFreeForce(), a, &(b->m_position), ONE, FROM_INT(10), false);
-  buildSpringForce(simulationGetFreeForce(), a, &v, FROM_INT(1), FROM_INT(5), true);
+  v = Vector3D(FROM_INT(10),FROM_INT(11),FROM_INT(0));
   
+  //buildSpringForce(simulationGetFreeForce(), b, &(a->m_position), ONE, FROM_INT(10), false);
+  //buildSpringForce(simulationGetFreeForce(), a, &(b->m_position), ONE, FROM_INT(10), false);
+  
+  buildRodConstraint(simulationGetFreeConstraint(), p1, p2, FROM_INT(5));
+  buildRodConstraint(simulationGetFreeConstraint(), p1, p3, FROM_INT(5));
+  buildRodConstraint(simulationGetFreeConstraint(), p2, p3, FROM_INT(5));
 
-  //Vector3D v(FROM_INT(10),FROM_INT(10),FROM_INT(5));
+  /*buildSpringForce(simulationGetFreeForce(), p1, &(p2->m_position), FROM_INT(5), FROM_INT(20), false);
+  buildSpringForce(simulationGetFreeForce(), p1, &(p3->m_position), FROM_INT(5), FROM_INT(20), false);
+  buildSpringForce(simulationGetFreeForce(), p2, &(p3->m_position), FROM_INT(5), FROM_INT(20), false);
+  buildSpringForce(simulationGetFreeForce(), p2, &(p1->m_position), FROM_INT(5), FROM_INT(20), false);
+  buildSpringForce(simulationGetFreeForce(), p3, &(p1->m_position), FROM_INT(5), FROM_INT(20), false);
+  buildSpringForce(simulationGetFreeForce(), p3, &(p2->m_position), FROM_INT(5), FROM_INT(20), false);*/
+  
+  buildSpringForce(simulationGetFreeForce(), p1, &v, FROM_INT(5), FROM_INT(20), true);
 
-  Object* c = simulationGetFreeObject();
+  buildAnalogForce(simulationGetFreeForce(), p2);
+
+  /*c = simulationGetFreeObject();
   c->m_inUse = true;
   c->m_objectType = PARTICLE;
   c->m_position = v;
   c->m_invMass = 0;
-  c->m_particleData.m_radius = FROM_INT(4);
+  c->m_particleData.m_radius = FROM_INT(4);*/
 
   /*Object* e = simulationGetFreeObject();
   e->m_inUse = true;
@@ -72,6 +102,22 @@ void loop() {
 
 
 void test() {
+  Serial.println("PI:");
+  Serial.println(TO_FLOAT(FP_PI));
+  Serial.println(TO_STRING(FP_PI));
+  
+  FixedPoint three = FROM_INT(3);
+  Serial.println(three);
+  Serial.println(three * -1);
+  Vector3D vNeg(FROM_INT(3),FROM_INT(3),FROM_INT(3));
+  Vector3D vTwo(FROM_INT(2),FROM_INT(2),FROM_INT(2));
+  Serial.print("Neg test:");
+  vNeg.print();
+  vTwo.print();
+  vNeg = vNeg + (vTwo * -ONE);
+  vNeg.print();
+  
+  
   Serial.println("TEST MODE!");
   Vector3D v1(FROM_INT(1),FROM_INT(2),FROM_INT(3));
   Vector3D v2(FROM_INT(3),FROM_INT(2),FROM_INT(1));

@@ -39,7 +39,9 @@
   #define FP_2PI 1608
 #endif
 
-#define FP_PI (FP_2PI >> 1)
+
+#define FRACTION_PART(a) (a - ((a >> SHIFT_VAL) << SHIFT_VAL))
+#define NUM_DECIMAL_PLACES ((1UL << SHIFT_VAL) / 10)
 
 
 
@@ -72,13 +74,26 @@ inline FixedPoint divide(FixedPointLarge num, FixedPoint denom);
 #define FROM_FLOAT(a) ((FixedPoint)(a * ((FixedPoint)1 << SHIFT_VAL)))
 #define TO_INT(a) ((int)((a < 0) ? ((a * -1) >> SHIFT_VAL)*-1 : (a >> SHIFT_VAL)))
 #define TO_FLOAT(a) (a / ((float)(1UL << SHIFT_VAL)))
+#define TO_STRING(a) (toString(a))
 
 
 const FixedPoint ONE = FROM_INT(1);
 const FixedPoint ZERO = 0;
 const FixedPoint POINT_FIVE = DIV(ONE, FROM_INT(2));
-const FixedPoint EPSILON = DIV(ONE, FROM_INT(1000));
+const FixedPoint EPSILON = DIV(ONE, FROM_INT(5000));
 const FixedPoint G = DIV(FROM_INT(-981), FROM_INT(100));
+#define FP_PI (FP_2PI >> 1)
+
+String toString(FixedPoint fp) {
+  String retval = String(fp >> SHIFT_VAL);
+  String remainder = String(FRACTION_PART(fp));
+  Serial.println(retval);
+  Serial.println(remainder);
+  while (remainder.length() < NUM_DECIMAL_PLACES) {
+    remainder = "0" + remainder;
+  }
+  return retval + "." + remainder;  
+}
 
 
 inline FixedPoint multiply(FixedPoint m1, FixedPoint m2) {

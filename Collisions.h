@@ -2,6 +2,7 @@
 
 #include "Particle.h"
 #include "Defines.h"
+#include "SimulationObjects.h"
 #include "debug.h"
 
 bool checkIfCollision(ContactObject* newContact, Object* o1, Object* o2) {
@@ -43,7 +44,7 @@ void resolveContact(const ContactObject& contact, const FixedPoint& timeDelta) {
   if (totalMass > 0) {    
     if(seperatingVelocity < 0) {
       debug("Restitution:",DEBUG_COLLISION);
-      //Serial.println(TO_FLOAT(contact.m_restitution));
+      debugln(TO_FLOAT(contact.m_restitution),DEBUG_COLLISION);
       FixedPoint newVelocity = MULT(-seperatingVelocity, contact.m_restitution);
       FixedPoint delta = newVelocity - seperatingVelocity;    
   
@@ -67,16 +68,19 @@ void resolveContact(const ContactObject& contact, const FixedPoint& timeDelta) {
     debug("Pen:", DEBUG_COLLISION);
     debugln(TO_FLOAT(contact.m_penetration), DEBUG_COLLISION);
     if(contact.m_penetration > 0) {
-      Vector3D movementVectorPerMass = contact.m_contactNormal * DIV(-contact.m_penetration, totalMass);
-      contact.m_c1->m_position += movementVectorPerMass * -(contact.m_c1->m_invMass);
-      debug("C1 position update:" + (movementVectorPerMass * -(contact.m_c1->m_invMass)).toString(), DEBUG_COLLISION);
+      Vector3D movementVectorPerMass = contact.m_contactNormal * DIV(contact.m_penetration, totalMass);
+      
+      contact.m_c1->m_position += movementVectorPerMass * contact.m_c1->m_invMass;
+      debug("C1 position update:" + (movementVectorPerMass * contact.m_c1->m_invMass).toString(), DEBUG_COLLISION);
+      
       if( contact.m_c2 != NULL ) {
-        contact.m_c2->m_position += movementVectorPerMass * -(contact.m_c2->m_invMass);
-        debug("C2 position update:" + (movementVectorPerMass * -(contact.m_c2->m_invMass)).toString(), DEBUG_COLLISION);
+        Vector3D c2Movement = (movementVectorPerMass * contact.m_c2->m_invMass) * -ONE;
+        debug(c2Movement.toString(), DEBUG_COLLISION);
+        contact.m_c2->m_position += c2Movement;
+        debug("C2 position update:" + c2Movement.toString(), DEBUG_COLLISION);
       }
       debugln(DEBUG_COLLISION);
     }
-  }
-  
+  }  
 }
 

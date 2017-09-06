@@ -3,8 +3,23 @@
 #include "SimulationObjects.h"
 #include "Particle.h"
 #include "Defines.h"
+#include "debug.h"
 
+void analogForce(ForceObject& fo, const FixedPoint& timeDelta) {
+  int analogReading = analogRead(0);
+  //Serial.print("Analog reading:");
+  //Serial.println(analogReading);
+  int forceInput = 1023 - analogReading;
+  FixedPoint force = DIV(FROM_INT(forceInput), FROM_INT(1023));
+  force = MULT(force, FROM_INT(100));
+  Vector3D forceVector(0, force, 0);
+  fo.m_obj->m_force += forceVector;
+}
 
+void buildAnalogForce(ForceObject *fo, Object* obj) {
+  fo->m_obj = obj;
+  fo->m_generator = analogForce;
+}
 
 void gravityForce(ForceObject& fo, const FixedPoint& timeDelta) {
   if(fo.m_obj->m_invMass > 0) {
@@ -39,11 +54,11 @@ void springForce(ForceObject& fo, const FixedPoint& timeDelta) {
 void fixedSpringForce(ForceObject& fo, const FixedPoint& timeDelta) {
   if(fo.m_obj->m_invMass > 0) {
     Vector3D vector(fo.m_springData.m_fixedEndpoint.m_fixedEndpointX, fo.m_springData.m_fixedEndpoint.m_fixedEndpointY, fo.m_springData.m_fixedEndpoint.m_fixedEndpointZ);
-#ifdef DEBUG
+
     Serial.print("Fixed Spring end:");
     vector.print();
     Serial.println();
-#endif
+
     switch (fo.m_obj->m_objectType) {
       case PARTICLE:
         particleSpringForce(fo, timeDelta, &vector, fo.m_springData.m_springConstant, fo.m_springData.m_restLength);
@@ -55,27 +70,22 @@ void fixedSpringForce(ForceObject& fo, const FixedPoint& timeDelta) {
 }
 
 void buildSpringForce(ForceObject *fo, Object* obj, Vector3D* endPoint, FixedPoint springLength, FixedPoint springConstant, bool isFixedPoint) {
-#ifdef DEBUG
-  Serial.println("BuildSpringForce");
-  endPoint->print();
-  Serial.println();
-#endif
+  debugln("BuildSpringForce", DEBUG_FORCE);
+  debugln(endPoint->toString(), DEBUG_FORCE);
   fo->m_obj = obj;
   
   if(isFixedPoint) {
-#ifdef DEBUG
-    Serial.print("FP");
-    endPoint->print();
-    Serial.println();
-#endif
+    debug("FixedPoint Spring", DEBUG_FORCE);
+    debugln(endPoint->toString(), DEBUG_FORCE);
+    
     fo->m_springData.m_fixedEndpoint.m_fixedEndpointX = endPoint->m_x;
     fo->m_springData.m_fixedEndpoint.m_fixedEndpointY = endPoint->m_y;
     fo->m_springData.m_fixedEndpoint.m_fixedEndpointZ = endPoint->m_z;
-    #ifdef DEBUG
-    Serial.println(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointX));
-    Serial.println(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointY));
-    Serial.println(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointZ));
-    #endif
+
+    debugln(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointX), DEBUG_FORCE);
+    debugln(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointY), DEBUG_FORCE);
+    debugln(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointZ), DEBUG_FORCE);
+
     fo->m_generator = fixedSpringForce;
   } else {
     fo->m_springData.m_endpoint = (void*)endPoint;

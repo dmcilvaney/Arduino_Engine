@@ -48,16 +48,11 @@ struct Vector3D
   }
   
   void print() const {
-    Serial.print("(");
-    Serial.print(TO_FLOAT(m_x));
-    Serial.print(",");
-    Serial.print(TO_FLOAT(m_y));
-    Serial.print(",");
-    Serial.print(TO_FLOAT(m_z));
-    Serial.print(")");
+    Serial.print(m_x);
+    Serial.print(toString());
   }
 
-    String toString() const {
+  String toString() const {
     String output = "(";
     output += TO_FLOAT(m_x);
     output += ",";
