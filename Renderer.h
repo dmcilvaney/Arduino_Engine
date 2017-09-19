@@ -6,8 +6,8 @@
 #include "Simulation.h"
 #include "Defines.h"
 
-#define SCREEN_X 10
-#define SCREEN_Y 10
+#define SCREEN_X 20
+#define SCREEN_Y 20
 #define SCREEN_SIZE(x,y) (((x*y) + 7) / 8)
 #define SCREEN_SCALE FROM_INT(100)
 

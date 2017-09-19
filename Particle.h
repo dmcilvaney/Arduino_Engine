@@ -8,7 +8,7 @@
 void particleIntegrate(Object& obj, const FixedPoint& timeDelta) {
   //Serial.println("PARTICLE INTEGRATE");
   //Serial.print("Time:");
-  //Serial.println(TO_FLOAT(timeDelta));
+  //Serial.println(TO_STRING(timeDelta));
   //obj.m_position.print();
   //obj.m_velocity.print();
   //obj.m_acceleration.print();
@@ -39,11 +39,11 @@ void particleGravityForce(const ForceObject& fo, const FixedPoint& timeDelta, co
 }
 
 void particleSpringForce(const ForceObject& fo, const FixedPoint& timeDelta, const void* endpoint, const FixedPoint& springConstant, const FixedPoint& restLength) {
-  Serial.println("Particle spring");
+  //Serial.println("Particle spring");
   Vector3D displacement = fo.m_obj->m_position - (*(Vector3D*)endpoint);
   FixedPoint forceMagnitude = MULT(ABS(displacement.magnitude() - restLength), springConstant);
-  displacement.print();
-  Serial.println(TO_FLOAT(forceMagnitude));
+  //displacement.print();
+  //Serial.println(TO_STRING(forceMagnitude));
   Vector3D force = displacement;
   force.normalize();
   force *= -forceMagnitude;
@@ -51,13 +51,19 @@ void particleSpringForce(const ForceObject& fo, const FixedPoint& timeDelta, con
   Serial.print("Displacement:");
   displacement.print();  
   Serial.print("Magnitude:");
-  Serial.println(TO_FLOAT(forceMagnitude));
+  Serial.println(TO_STRING(forceMagnitude));
   Serial.print("Force:");
   force.print();
   Serial.println();
 #endif
   
   fo.m_obj->m_force += force;
+
+
+  displacement.normalize();
+  Vector3D dampingForce = displacement * (fo.m_obj->m_velocity * displacement) * FROM_INT(5);
+  fo.m_obj->m_force -= dampingForce;
+  
 }
 
 bool particleCheckIfCollision(ContactObject* newContact, Object* o1, Object* o2) {

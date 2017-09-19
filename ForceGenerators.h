@@ -55,10 +55,6 @@ void fixedSpringForce(ForceObject& fo, const FixedPoint& timeDelta) {
   if(fo.m_obj->m_invMass > 0) {
     Vector3D vector(fo.m_springData.m_fixedEndpoint.m_fixedEndpointX, fo.m_springData.m_fixedEndpoint.m_fixedEndpointY, fo.m_springData.m_fixedEndpoint.m_fixedEndpointZ);
 
-    Serial.print("Fixed Spring end:");
-    vector.print();
-    Serial.println();
-
     switch (fo.m_obj->m_objectType) {
       case PARTICLE:
         particleSpringForce(fo, timeDelta, &vector, fo.m_springData.m_springConstant, fo.m_springData.m_restLength);
@@ -82,9 +78,9 @@ void buildSpringForce(ForceObject *fo, Object* obj, Vector3D* endPoint, FixedPoi
     fo->m_springData.m_fixedEndpoint.m_fixedEndpointY = endPoint->m_y;
     fo->m_springData.m_fixedEndpoint.m_fixedEndpointZ = endPoint->m_z;
 
-    debugln(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointX), DEBUG_FORCE);
-    debugln(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointY), DEBUG_FORCE);
-    debugln(TO_FLOAT(fo->m_springData.m_fixedEndpoint.m_fixedEndpointZ), DEBUG_FORCE);
+    debugln(TO_STRING(fo->m_springData.m_fixedEndpoint.m_fixedEndpointX), DEBUG_FORCE);
+    debugln(TO_STRING(fo->m_springData.m_fixedEndpoint.m_fixedEndpointY), DEBUG_FORCE);
+    debugln(TO_STRING(fo->m_springData.m_fixedEndpoint.m_fixedEndpointZ), DEBUG_FORCE);
 
     fo->m_generator = fixedSpringForce;
   } else {

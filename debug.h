@@ -10,7 +10,8 @@ enum DebugType {DEBUG_GENERAL, DEBUG_COLLISION, DEBUG_CONSTRAINT, DEBUG_FIXEDPOI
 
 #define DEBUG_ON (defined( DEBUG_GENERAL_ENABLED) || defined( DEBUG_COLLISION_ENABLED)  || defined( DEBUG_FIXEDPOINT_ENABLED)  || defined( DEBUG_FORCE_ENABLED)  || defined( DEBUG_RENDERER_ENABLED)  || defined( DEBUG_SIM_ENABLED) ||  defined( DEBUG_VECTOR_ENABLED) ||  defined( DEBUG_CONSTRAINT_ENABLED))
 
-inline void debug(const String string, const DebugType debugType, const bool newLine = false) {
+inline void debug(const String &string, const DebugType &debugType, const bool newLine = false) {
+#if DEBUG_ON
   switch (debugType) {
 #ifdef DEBUG_GENERAL_ENABLED
       case(DEBUG_GENERAL):
@@ -79,40 +80,41 @@ inline void debug(const String string, const DebugType debugType, const bool new
       default:
         break;
   }
+#endif
 }
 
-inline void debug(const float floatVal, const DebugType debugType) {
+inline void debug(const float &floatVal, const DebugType &debugType) {
 #if DEBUG_ON
   debug(String(floatVal), debugType);
 #endif
 }
-inline void debug(const FixedPoint fpVal, const DebugType debugType) {
+inline void debug(const FixedPoint &fpVal, const DebugType &debugType) {
 #if DEBUG_ON
   debug(String(fpVal), debugType);
 #endif
 }
-inline void debug(const int intVal, const DebugType debugType) {
+inline void debug(const int &intVal, const DebugType &debugType) {
 #if DEBUG_ON
   debug(String(intVal), debugType);
 #endif
 }
 
-inline void debugln(const String string, const DebugType debugType) {
+inline void debugln(const String &string, const DebugType &debugType) {
 #if DEBUG_ON
   debug(string, debugType, true);
 #endif
 }
-inline void debugln(const float floatVal, const DebugType debugType) {
+inline void debugln(const float &floatVal, const DebugType &debugType) {
 #if DEBUG_ON
   debug(String(floatVal), debugType, true);
 #endif
 }
-inline void debugln(const FixedPoint fpVal, const DebugType debugType) {
+inline void debugln(const FixedPoint &fpVal, const DebugType &debugType) {
 #if DEBUG_ON
   debug(String(fpVal), debugType, true);
 #endif
 }
-inline void debugln(const int intVal, const DebugType debugType) {
+inline void debugln(const int &intVal, const DebugType &debugType) {
 #if DEBUG_ON
   debug(String(intVal), debugType, true);
 #endif

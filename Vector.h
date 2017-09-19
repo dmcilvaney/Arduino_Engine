@@ -48,17 +48,16 @@ struct Vector3D
   }
   
   void print() const {
-    Serial.print(m_x);
     Serial.print(toString());
   }
 
   String toString() const {
     String output = "(";
-    output += TO_FLOAT(m_x);
+    output += TO_STRING(m_x);
     output += ",";
-    output += TO_FLOAT(m_y);
+    output += TO_STRING(m_y);
     output += ",";
-    output += TO_FLOAT(m_z);
+    output += TO_STRING(m_z);
     output += ")";
     return output;
   }
@@ -73,7 +72,7 @@ struct Vector3D
   Vector3D operator*(const FixedPoint scal) const {
     return Vector3D(MULT(m_x, scal), MULT(m_y, scal), MULT(m_z, scal));
   }
-  //  ***(vector)
+  //  ***(vector) - Dot product
   Vector3D componentProduct(const Vector3D& vector) const {
     return Vector3D(MULT(m_x, vector.m_x), MULT(m_y, vector.m_y), MULT(m_z, vector.m_z));
   }
@@ -81,7 +80,7 @@ struct Vector3D
     return MULT(m_x, vector.m_x) + MULT(m_y, vector.m_y) + MULT(m_z, vector.m_z);
   }
 
-  //  %%%
+  //  %%% - Cross product
   Vector3D operator%(const Vector3D& vector) const {
     return Vector3D( MULT(m_y, vector.m_z) - MULT(m_z, vector.m_y), MULT(m_z, vector.m_x) - MULT(m_x, vector.m_z), MULT(m_x, vector.m_y) - MULT(m_y, vector.m_x));
   }

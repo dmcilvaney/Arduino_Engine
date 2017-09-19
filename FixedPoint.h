@@ -9,6 +9,7 @@
   #define SQRT_SHIFT_VAL 2
   #define FP_MAX 0x7F
   #define FP_2PI 100
+  #define NUM_DECIMAL_PLACES 1  // Floor(Log10(1<<SHIFT_VAL))
 #elif FIXED_SIZE == 16
   #define FixedPoint int16_t
   #define FixedPointLarge int32_t
@@ -16,13 +17,16 @@
   #define SQRT_SHIFT_VAL 4
   #define FP_MAX 0x7FFF
   #define FP_2PI 1608
+  #define NUM_DECIMAL_PLACES 2
 #elif FIXED_SIZE == 32
   #define FixedPoint int32_t
   #define FixedPointLarge int64_t
+  // Multiplication by 65536
   #define SHIFT_VAL 16
   #define SQRT_SHIFT_VAL 8
   #define FP_MAX 0x7FFFFFFF
   #define FP_2PI 411774
+  #define NUM_DECIMAL_PLACES 4
 #elif FIXED_SIZE == 64
   #define FixedPoint int64_t
   #define FixedPointLarge int64_t
@@ -30,6 +34,7 @@
   #define SQRT_SHIFT_VAL 16
   #define FP_MAX 0x7FFFFFFFFFFFFFFF
   #define FP_2PI 26986075409
+  #define NUM_DECIMAL_PLACES 9
 #else
   #define FixedPoint int16_t
   #define FixedPointLarge int32_t
@@ -37,11 +42,11 @@
   #define SQRT_SHIFT_VAL 4
   #define FP_MAX 0x7FFF
   #define FP_2PI 1608
+  #define NUM_DECIMAL_PLACES 2
 #endif
 
 
-#define FRACTION_PART(a) (a - ((a >> SHIFT_VAL) << SHIFT_VAL))
-#define NUM_DECIMAL_PLACES ((1UL << SHIFT_VAL) / 10)
+
 
 
 
@@ -73,26 +78,36 @@ inline FixedPoint divide(FixedPointLarge num, FixedPoint denom);
 #define FROM_INT(a) (((FixedPoint)a) * ((FixedPoint)1 << SHIFT_VAL))
 #define FROM_FLOAT(a) ((FixedPoint)(a * ((FixedPoint)1 << SHIFT_VAL)))
 #define TO_INT(a) ((int)((a < 0) ? ((a * -1) >> SHIFT_VAL)*-1 : (a >> SHIFT_VAL)))
-#define TO_FLOAT(a) (a / ((float)(1UL << SHIFT_VAL)))
-#define TO_STRING(a) (toString(a))
+//#define TO_FLOAT(a) (a / ((float)(1UL << SHIFT_VAL)))
+#define FRACTION_PART(a) (a - ((a >> SHIFT_VAL) << SHIFT_VAL))
+#define TO_STRING(a) (fpToString(a))
 
 
 const FixedPoint ONE = FROM_INT(1);
 const FixedPoint ZERO = 0;
 const FixedPoint POINT_FIVE = DIV(ONE, FROM_INT(2));
-const FixedPoint EPSILON = DIV(ONE, FROM_INT(5000));
+const FixedPoint EPSILON = DIV(ONE, FROM_INT(1000));
 const FixedPoint G = DIV(FROM_INT(-981), FROM_INT(100));
 #define FP_PI (FP_2PI >> 1)
 
-String toString(FixedPoint fp) {
-  String retval = String(fp >> SHIFT_VAL);
-  String remainder = String(FRACTION_PART(fp));
-  Serial.println(retval);
-  Serial.println(remainder);
-  while (remainder.length() < NUM_DECIMAL_PLACES) {
-    remainder = "0" + remainder;
+String fpToString(FixedPoint fp) {
+  bool negative = fp < 0;
+  if (negative) {
+    fp *= -1;
   }
-  return retval + "." + remainder;  
+  String retval = negative ? "-" : "";
+  retval += (fp >> SHIFT_VAL);
+  String decimal = ".";
+  FixedPoint remainder = FRACTION_PART(fp);
+  FixedPoint place = ONE;
+  
+  for(int i = 0; i < NUM_DECIMAL_PLACES; i++) {  
+    place = DIV(place, FROM_INT(10));
+    int digit = TO_INT(DIV(remainder, place));
+    decimal += digit;    
+    remainder = remainder - MULT(place, FROM_INT(digit));
+  }
+  return retval + decimal;  
 }
 
 

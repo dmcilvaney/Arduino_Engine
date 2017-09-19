@@ -5,10 +5,10 @@
 
 enum ObjectType {NONE, PARTICLE};
 
-#define NUM_OBJECTS 4
-#define NUM_FORCES 10
-#define NUM_COLLISIONS 10
-#define NUM_CONSTRAINTS 3
+#define NUM_OBJECTS 3
+#define NUM_FORCES 4
+#define NUM_COLLISIONS 5
+#define NUM_CONSTRAINTS 1
 
 struct Particle {
   FixedPoint m_radius;
@@ -30,6 +30,8 @@ struct Object {
   
 
   FixedPoint m_damping = ONE - EPSILON;
+
+  Vector3D m_penetrationAdjustment;
 
   ObjectType m_objectType;
   
@@ -85,5 +87,5 @@ struct Simulation {
   int m_activeContacts = 0;
   ContactObject m_worldContacts[NUM_COLLISIONS];
   ConstraintObject m_worldConstraints[NUM_CONSTRAINTS];
-  unsigned long m_lastStepTime = 0;
+  unsigned long m_simulationTime  = 0;
 };
