@@ -19,7 +19,7 @@
 #define SCALE_X 1
 #define SCALE_Y 1
 
-#define FRAME_DELAY 50
+#define FRAME_DELAY 20
 
 int8_t screen[SCREEN_SIZE(SCREEN_X,SCREEN_Y)];
 
@@ -167,10 +167,12 @@ void drawScreen() {
 
 unsigned long lastUpdate = 0;
 void render(const Simulation& sim) {
+  
 
   if(millis() - lastUpdate < FRAME_DELAY) {
     return;
   }
+  PROFILE_ON(PROFILE_RENDER);
   
   clearScreen();
   for (int i = 0; i < NUM_OBJECTS; i++) {
@@ -185,6 +187,7 @@ void render(const Simulation& sim) {
   Serial.println();
   drawScreen();
   lastUpdate = millis();
+  PROFILE_OFF(PROFILE_RENDER);
 }
 
 

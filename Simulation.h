@@ -10,6 +10,9 @@
 #include "debug.h"
 
 #define MIN_TIME_STEP 10
+#define WORLD_SIZE_X 20
+#define WORLD_SIZE_Y 20
+#define WORLD_SIZE_Z 20
 
 Simulation sim;
 
@@ -76,37 +79,77 @@ ContactObject* simulationGetFreeContact() {
   return NULL;
 }
 
+void checkLimits() {
+  for(int i = 0; i < sim.m_numObjects; i++) {
+    Object *o = &sim.m_worldObjects[i];
+    if(o->m_inUse) {
+      if(o->m_position.m_x < 0) {
+        o->m_position.m_x = 0;
+        o->m_velocity.m_x = 1;
+      }
+      if(o->m_position.m_y < 0) {
+        o->m_position.m_y = 0;
+        o->m_velocity.m_y = 1;
+      }
+      if(o->m_position.m_z < 0) {
+        o->m_position.m_z = 0;
+        o->m_velocity.m_z = 1;
+      }
+      if(o->m_position.m_x > FROM_INT(WORLD_SIZE_X)) {
+        o->m_position.m_x = FROM_INT(WORLD_SIZE_X);
+        o->m_velocity.m_x = -1;
+      }
+      if(o->m_position.m_y > FROM_INT(WORLD_SIZE_Y)) {
+        o->m_position.m_y = FROM_INT(WORLD_SIZE_Y);
+        o->m_velocity.m_y = -1;
+      }
+      if(o->m_position.m_z > FROM_INT(WORLD_SIZE_Z)) {
+        o->m_position.m_z = FROM_INT(WORLD_SIZE_Z);
+        o->m_velocity.m_z = -1;
+      }
+    }
+  }
+}
+
 //When did the last frame start.
-unsigned long lastFrameTime = 0;
-int lastFrameDelta = MIN_TIME_STEP;
+unsigned long lastFrameEndTime = 0;
+unsigned long lastFrameCalcTime = MIN_TIME_STEP;
 
 static void stepSim() {
   unsigned long currentTime = millis();
   
   //Time difference between the real time and the simulation time.
   unsigned long timeDelta = currentTime - sim.m_simulationTime;
-
-  if(timeDelta <= (lastFrameDelta >> 5) + 1) {
+  unsigned long nonSimCalcTime = currentTime - lastFrameEndTime;
+  unsigned long lastFrameTotalTime = lastFrameCalcTime + nonSimCalcTime;
+  /*Serial.print("NST:");
+  Serial.println(nonSimCalcTime);
+  Serial.print("ST:");
+  Serial.println(lastFrameCalcTime);
+  Serial.print("TT:");
+  Serial.println(lastFrameTotalTime);
+  Serial.print("Outstanding Delta:");
+  Serial.println(timeDelta);*/
+  
+  
+  if(timeDelta <= lastFrameTotalTime) {
     //Simulation has caught up to real time (-1 frame back), render another frame
+    checkLimits();
     render(sim);
+    lastFrameEndTime = millis();
     return;
   }
-
-  Serial.print(timeDelta);
-  Serial.print('-');
-  Serial.println((currentTime - lastFrameTime));
-  //lastFrameDelta += ((int)(currentTime - lastFrameTime) << 4  - (lastFrameDelta >> 4));
-  lastFrameDelta += (currentTime - lastFrameTime);
-  lastFrameTime = currentTime;
+  PROFILE_ON(PROFILE_SIM);
 
   // Otherwise we probbaly want to try to catch up to the current time.
-  unsigned long stepDelta = max((lastFrameDelta) + 10, MIN_TIME_STEP);
+  unsigned long stepDelta = max((lastFrameTotalTime) + 5, MIN_TIME_STEP);
   // Make sure we don't overshoot real time.
   stepDelta = min(stepDelta, timeDelta);
   //Serial.print("step:");
-  Serial.println(stepDelta);
+  //Serial.println(stepDelta);
   
   sim.m_simulationTime += stepDelta;
+  checkLimits();
   FixedPoint sec = DIV(FROM_INT(stepDelta), FROM_INT(1000));
   for(int i = 0; i < sim.m_numForces; i++) {
     if(sim.m_worldForces[i].m_generator != NULL) {
@@ -147,7 +190,7 @@ static void stepSim() {
           debug(TO_STRING(tentativeContact.m_seperatingVelocity), DEBUG_SIM);
           debug(" Penetration:", DEBUG_SIM);
           debug(TO_STRING(tentativeContact.m_penetration), DEBUG_SIM);
-          debugln(DEBUG_SIM);                               
+          debugln("", DEBUG_SIM);                               
         }
       }
     }
@@ -190,7 +233,9 @@ static void stepSim() {
     resolveContact(sim.m_worldContacts[worstCollision], sec);
     totalCollisions++;
   }
-
+  lastFrameEndTime = millis();
+  lastFrameCalcTime = lastFrameEndTime - currentTime;
+  PROFILE_OFF(PROFILE_SIM);
 }
 
 

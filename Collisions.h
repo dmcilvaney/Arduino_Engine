@@ -74,7 +74,7 @@ void resolveContact(ContactObject& contact, const FixedPoint& timeDelta) {
         contact.m_c2->m_velocity += impulseVector * -(contact.m_c2->m_invMass);
         debug("  C2 impulse:" + (impulseVector * -contact.m_c2->m_invMass).toString(), DEBUG_COLLISION);
       }
-      debugln(DEBUG_COLLISION);
+      debugln("",DEBUG_COLLISION);
     }  
     
     //Fix Penetration
@@ -101,7 +101,7 @@ void resolveContact(ContactObject& contact, const FixedPoint& timeDelta) {
         contact.m_c2->m_penetrationAdjustment += c2Movement;
         debugln(String(" to ") + (contact.m_c2->m_position).toString(), DEBUG_COLLISION);
       }
-      debugln(DEBUG_COLLISION);
+      debugln("",DEBUG_COLLISION);
     }
   }  
 }

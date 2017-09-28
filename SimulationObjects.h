@@ -5,9 +5,9 @@
 
 enum ObjectType {NONE, PARTICLE};
 
-#define NUM_OBJECTS 3
-#define NUM_FORCES 4
-#define NUM_COLLISIONS 5
+#define NUM_OBJECTS 4
+#define NUM_FORCES 7
+#define NUM_COLLISIONS 7
 #define NUM_CONSTRAINTS 1
 
 struct Particle {

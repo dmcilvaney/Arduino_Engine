@@ -22,32 +22,30 @@ void rodConstraint(ConstraintObject& co) {
   posDelta.normalize();
   
   //if( currentLength < co.m_rodData.m_length - EPSILON ) {
-    //debug("Rod too short by ",DEBUG_CONSTRAINT);
-    
-    FixedPoint delta = co.m_rodData.m_length - currentLength;
-    
-    debugln(TO_STRING(delta), DEBUG_CONSTRAINT);
-    
-    ContactObject* contact = simulationGetFreeContact();
-    contact->m_c1 = co.m_obj1;
-    contact->m_c2 = co.m_obj2;
-    contact->m_restitution = 0;
-    contact->m_contactNormal = posDelta;
-    contact->m_penetration = co.m_rodData.m_length - currentLength;
+  //debug("Rod too short by ",DEBUG_CONSTRAINT);
+  
+  FixedPoint delta = co.m_rodData.m_length - currentLength;
+  
+  debugln(TO_STRING(delta), DEBUG_CONSTRAINT);
+  
+  ContactObject* contact = simulationGetFreeContact();
+  contact->m_c1 = co.m_obj1;
+  contact->m_c2 = co.m_obj2;
+  contact->m_restitution = 0;
+  contact->m_contactNormal = posDelta;
+  contact->m_penetration = delta;
   //}
 
   //else if( currentLength > co.m_rodData.m_length + EPSILON) {
-    //debugln("Rod too long by ",DEBUG_CONSTRAINT);
-    //FixedPoint delta = currentLength - co.m_rodData.m_length;
-    delta = currentLength - co.m_rodData.m_length;
-    debugln(TO_STRING(delta), DEBUG_CONSTRAINT);
-    //ContactObject* contact = simulationGetFreeContact();
-    contact = simulationGetFreeContact();
-    contact->m_c1 = co.m_obj1;
-    contact->m_c2 = co.m_obj2;
-    contact->m_restitution = 0;
-    contact->m_contactNormal = posDelta*-ONE;
-    contact->m_penetration = currentLength - co.m_rodData.m_length;
+  //debugln("Rod too long by ",DEBUG_CONSTRAINT);
+  delta = currentLength - co.m_rodData.m_length;
+  //debugln(TO_STRING(delta), DEBUG_CONSTRAINT);
+  contact = simulationGetFreeContact();
+  contact->m_c1 = co.m_obj1;
+  contact->m_c2 = co.m_obj2;
+  contact->m_restitution = 0;
+  contact->m_contactNormal = posDelta*-ONE;
+  contact->m_penetration = delta;
   //}
 
   //else {
