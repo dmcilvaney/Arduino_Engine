@@ -69,29 +69,30 @@ inline unsigned int msb(unsigned int value) {
 #endif
 }
 
-inline FixedPoint multiply(FixedPoint m1, FixedPoint m2);
-inline FixedPoint divide(FixedPointLarge num, FixedPoint denom);
+inline FixedPoint fp_multiply(FixedPoint m1, FixedPoint m2);
+inline FixedPoint fp_divide(FixedPointLarge num, FixedPoint denom);
 
 
-#define MULT(a,b) multiply(a, b)
-#define DIV(a,b) divide(a, b)
+#define MULT(a,b) fp_multiply(a, b)
+#define DIV(a,b) fp_divide(a, b)
 #define ABS(a) (a > 0 ? a : a * -1)
 #define FROM_INT(a) (((FixedPoint)a) * ((FixedPoint)1 << SHIFT_VAL))
+#define FROM_INT_SHIFT(a,decimalShift) (fp_fromIntShift(a,decimalShift))
 #define FROM_FLOAT(a) ((FixedPoint)(a * ((FixedPoint)1 << SHIFT_VAL)))
 #define TO_INT(a) ((int)((a < 0) ? ((a * -1) >> SHIFT_VAL)*-1 : (a >> SHIFT_VAL)))
 //#define TO_FLOAT(a) (a / ((float)(1UL << SHIFT_VAL)))
 #define FRACTION_PART(a) (a - ((a >> SHIFT_VAL) << SHIFT_VAL))
-#define TO_STRING(a) (fpToString(a))
+#define TO_STRING(a) (fp_ToString(a))
 
 
 const FixedPoint ONE = FROM_INT(1);
 const FixedPoint ZERO = 0;
 const FixedPoint POINT_FIVE = DIV(ONE, FROM_INT(2));
 const FixedPoint EPSILON = DIV(ONE, FROM_INT(1000));
-const FixedPoint G = DIV(FROM_INT(-981), FROM_INT(100));
+const FixedPoint G = DIV(FROM_INT(981), FROM_INT(100));
 #define FP_PI (FP_2PI >> 1)
 
-String fpToString(FixedPoint fp) {
+String fp_ToString(FixedPoint fp) {
   bool negative = fp < 0;
   if (negative) {
     fp *= -1;
@@ -111,9 +112,9 @@ String fpToString(FixedPoint fp) {
   return retval + decimal;  
 }
 
-String format64(FixedPoint val) {
-  char buffer[20];
-  char*p = &buffer[19];
+String format64(int64_t val) {
+  char buffer[25];
+  char*p = &buffer[24];
   *p = '\0';
   bool negative = val < 0;
   if (negative) {
@@ -129,8 +130,7 @@ String format64(FixedPoint val) {
   return String(p);
 }
 
-
-inline FixedPoint multiply(FixedPoint m1, FixedPoint m2) {
+inline FixedPoint fp_multiply(FixedPoint m1, FixedPoint m2) {
   bool negative = false;
   if (m1 < 0) {
     m1 *= -1;
@@ -156,7 +156,7 @@ inline FixedPoint multiply(FixedPoint m1, FixedPoint m2) {
   return (FixedPoint)(negative ? result * -1 : result);
 }
 
-inline FixedPoint divide(FixedPointLarge num, FixedPoint denom) {
+inline FixedPoint fp_divide( FixedPointLarge num, FixedPoint denom) {
   bool negative = false;
   if (num < 0) {
     num *= -1;
@@ -170,7 +170,15 @@ inline FixedPoint divide(FixedPointLarge num, FixedPoint denom) {
   return (FixedPoint)(negative ? (num / denom) * -1 : (num / denom));
 }
 
-FixedPoint sRoot(FixedPoint num) {
+inline FixedPoint fp_fromIntShift(FixedPoint a, FixedPoint decimalShift) {
+  int shift = 1;
+  for(int i = 0; i < decimalShift; i++) {
+    shift *= 10;
+  }
+  return DIV(FROM_INT(a),FROM_INT(shift));
+}
+
+FixedPoint fp_sRoot(FixedPoint num) {
   if (TO_INT(num) < 0) {
     Serial.print("Negative square root error");
     for (;;);
@@ -206,7 +214,7 @@ const int64_t arctan_lookup_table[] PROGMEM = {0,21474657,42948241,64419678,8588
 // (x / (PI/4)) * 200
 
 //Only works from 0 to pi/4.
-FixedPoint arctan_lookup(FixedPoint x) {
+FixedPoint fp_arctan_lookup(FixedPoint x) {
   //Serial.println(TO_STRING(x));
   if(x > ONE || x < 0) {
     Serial.println("Arctan out of bounds!");
@@ -240,7 +248,7 @@ FixedPoint arctan_lookup(FixedPoint x) {
   return n1Fp + MULT(n2Fp - n1Fp, diffFromTableEntry);
 }
 
-FixedPoint arctangent2(FixedPoint x, FixedPoint y) {
+FixedPoint fp_arctangent2(FixedPoint x, FixedPoint y) {
   FixedPoint temp;
   FixedPoint offset = 0;
 
@@ -280,7 +288,7 @@ FixedPoint arctangent2(FixedPoint x, FixedPoint y) {
   //Serial.println(TO_STRING((FP_PI>>2)*offset));
   //Serial.println(TO_STRING(DIV(y,x)));
   //Serial.println();
-  FixedPoint at = arctan_lookup(DIV(y,x));
+  FixedPoint at = fp_arctan_lookup(DIV(y,x));
   //Serial.println(TO_STRING(at));
   //Serial.println();
   

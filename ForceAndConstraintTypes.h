@@ -20,6 +20,14 @@ struct SpringForceData {
   FixedPoint m_springConstant;
   FixedPoint m_restLength;
 };
+struct AnalogForceData {
+  union {
+    void *m_dynamicForceVector;
+    Vect *m_fixedForceVector;
+  };
+  uint8_t m_pinNumber;
+  FixedPoint m_averagedValue;
+};
 struct RodConstraintData {
   FixedPoint m_length;
 };

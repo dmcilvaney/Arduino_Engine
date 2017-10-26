@@ -25,7 +25,7 @@ struct Vector3D
   }
 
   FixedPoint magnitude() const {
-    return sRoot(MULT(m_x, m_x) + MULT(m_y, m_y)  + MULT(m_z, m_z) );
+    return fp_sRoot(MULT(m_x, m_x) + MULT(m_y, m_y)  + MULT(m_z, m_z) );
   }
 
   FixedPoint magnitude2() const {

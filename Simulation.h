@@ -82,30 +82,45 @@ ContactObject* simulationGetFreeContact() {
 void checkLimits() {
   for(int i = 0; i < sim.m_numObjects; i++) {
     Object *o = &sim.m_worldObjects[i];
-    if(o->m_inUse) {
-      if(o->m_position.m_x < 0) {
+    if(o->m_inUse) {      
+      if(o->m_position.m_x <= 0 && o->m_velocity.m_x < 0) {
+        Serial.println('a');
         o->m_position.m_x = 0;
-        o->m_velocity.m_x = 1;
+        o->m_velocity.m_x = o->m_velocity.m_x*-1;
       }
-      if(o->m_position.m_y < 0) {
-        o->m_position.m_y = 0;
-        o->m_velocity.m_y = 1;
+      if(o->m_position.m_y <= 0 && o->m_velocity.m_y < 0) {
+        o->m_position.m_y = 1;
+        Serial.print("B");
+        Serial.print(TO_STRING(o->m_velocity.m_y));
+        Serial.print(',');
+        Serial.print(TO_STRING(o->m_velocity.m_x));
+        o->m_velocity.m_y *= -1;
+        o->m_velocity.m_x *= -1;
+        Serial.print("->");
+        Serial.print(TO_STRING(o->m_velocity.m_y));
+        Serial.print(',');
+        Serial.println(TO_STRING(o->m_velocity.m_x));
+        
       }
-      if(o->m_position.m_z < 0) {
+      if(o->m_position.m_z <= 0 && o->m_velocity.m_z < 0) {
+        Serial.println('b');
         o->m_position.m_z = 0;
-        o->m_velocity.m_z = 1;
+        o->m_velocity.m_z = 0;
       }
-      if(o->m_position.m_x > FROM_INT(WORLD_SIZE_X)) {
+      if(o->m_position.m_x >= FROM_INT(WORLD_SIZE_X) && o->m_velocity.m_x > 0) {
+        Serial.println('c');
         o->m_position.m_x = FROM_INT(WORLD_SIZE_X);
-        o->m_velocity.m_x = -1;
+        o->m_velocity.m_x = 0;
       }
-      if(o->m_position.m_y > FROM_INT(WORLD_SIZE_Y)) {
+      if(o->m_position.m_y >= FROM_INT(WORLD_SIZE_Y) && o->m_velocity.m_y > 0) {
+        Serial.println('d');
         o->m_position.m_y = FROM_INT(WORLD_SIZE_Y);
-        o->m_velocity.m_y = -1;
+        o->m_velocity.m_y = 0;
       }
-      if(o->m_position.m_z > FROM_INT(WORLD_SIZE_Z)) {
+      if(o->m_position.m_z >= FROM_INT(WORLD_SIZE_Z) && o->m_velocity.m_z > 0) {
+        Serial.println('d');
         o->m_position.m_z = FROM_INT(WORLD_SIZE_Z);
-        o->m_velocity.m_z = -1;
+        o->m_velocity.m_z = 0;
       }
     }
   }
@@ -134,7 +149,6 @@ static void stepSim() {
   
   if(timeDelta <= lastFrameTotalTime) {
     //Simulation has caught up to real time (-1 frame back), render another frame
-    checkLimits();
     render(sim);
     lastFrameEndTime = millis();
     return;
@@ -149,7 +163,6 @@ static void stepSim() {
   //Serial.println(stepDelta);
   
   sim.m_simulationTime += stepDelta;
-  checkLimits();
   FixedPoint sec = DIV(FROM_INT(stepDelta), FROM_INT(1000));
   for(int i = 0; i < sim.m_numForces; i++) {
     if(sim.m_worldForces[i].m_generator != NULL) {
@@ -233,6 +246,9 @@ static void stepSim() {
     resolveContact(sim.m_worldContacts[worstCollision], sec);
     totalCollisions++;
   }
+
+  checkLimits();
+  
   lastFrameEndTime = millis();
   lastFrameCalcTime = lastFrameEndTime - currentTime;
   PROFILE_OFF(PROFILE_SIM);

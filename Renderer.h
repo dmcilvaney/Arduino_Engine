@@ -9,7 +9,7 @@
 #define SCREEN_X 20
 #define SCREEN_Y 20
 #define SCREEN_SIZE(x,y) (((x*y) + 7) / 8)
-#define SCREEN_SCALE FROM_INT(100)
+#define SCREEN_SCALE FROM_INT(50)
 
 #define SCREEN_BIT_NUMBER(i) (i & 0x7)
 #define SCREEN_BIT(i) (1 << SCREEN_BIT_NUMBER(i))
@@ -19,7 +19,7 @@
 #define SCALE_X 1
 #define SCALE_Y 1
 
-#define FRAME_DELAY 20
+#define FRAME_DELAY 50
 
 int8_t screen[SCREEN_SIZE(SCREEN_X,SCREEN_Y)];
 
@@ -29,6 +29,10 @@ inline void setPixel(int x, int y) {
   }
   int index = SCREEN_LOC(x,y);
   screen[SCREEN_INT_POSITION(index)] |= SCREEN_BIT(index);
+  //Serial.print("x:");
+  //Serial.print(x);
+  //Serial.print("y:");
+  //Serial.println(y);
   /*
   Serial.print('(');
   Serial.print(x);
@@ -63,7 +67,10 @@ inline bool queryScreen(int x, int y) {
 }
 
 void drawCircle(FixedPoint xFP, FixedPoint yFP, FixedPoint rFP) {
-
+  xFP = MULT(xFP, SCREEN_SCALE);
+  yFP = MULT(yFP, SCREEN_SCALE);
+  rFP = MULT(rFP, SCREEN_SCALE);
+  
   //Midpoint circle algorithm
   int x0 = TO_INT(xFP);
   int y0 = TO_INT(yFP);
@@ -127,7 +134,7 @@ void particleDraw(const Object &obj) {
 
   FixedPoint radius = obj.m_particleData.m_radius;
   drawCircle(x,y,radius);
-  setPixel(TO_INT(x),TO_INT(y));
+  setPixel(TO_INT(MULT(x, SCREEN_SCALE)),TO_INT(MULT(y, SCREEN_SCALE)));
 }
 
 void objectDraw(const Object &obj) {
@@ -143,23 +150,29 @@ void objectDraw(const Object &obj) {
 void drawScreen() {
   Serial.print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
   for(int x = 0; x < SCREEN_X+2; x++) {
+    //Serial.print('=');
     Serial.print('=');
   }
   Serial.println();
   for (int y = SCREEN_Y - 1; y>= 0; y--) {
+    //Serial.print('|');
     Serial.print('|');
     for (int x = 0; x < SCREEN_X; x++) {
       //Serial.println(arrayLoc);
       if(queryScreen(x,y)) {
+        //Serial.print('*');
         Serial.print('*');
       } else {
+        //Serial.print(' ');
         Serial.print(' ');
       }
-    }  
-    Serial.println('|');
+    }
+    //Serial.print('|');
+    Serial.println('|');    
   }
   
   for(int x = 0; x < SCREEN_X+2; x++) {
+    //Serial.print('=');
     Serial.print('=');
   }
   Serial.println();
