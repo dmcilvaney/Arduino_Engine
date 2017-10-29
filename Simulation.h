@@ -94,8 +94,13 @@ void checkLimits() {
         Serial.print(TO_STRING(o->m_velocity.m_y));
         Serial.print(',');
         Serial.print(TO_STRING(o->m_velocity.m_x));
-        o->m_velocity.m_y *= -1;
-        o->m_velocity.m_x *= -1;
+        if(o->m_velocity.m_y > FROM_INT_SHIFT(4,1)) {
+        o->m_velocity.m_x = MULT(o->m_velocity.m_x,-1*(FROM_INT_SHIFT(5,1)));
+        o->m_velocity.m_y = MULT(o->m_velocity.m_y,-1*(FROM_INT_SHIFT(5,1)));
+        } else {
+          o->m_velocity.m_x = 0;
+          o->m_velocity.m_y = 0;
+        }
         Serial.print("->");
         Serial.print(TO_STRING(o->m_velocity.m_y));
         Serial.print(',');
@@ -130,7 +135,7 @@ void checkLimits() {
 unsigned long lastFrameEndTime = 0;
 unsigned long lastFrameCalcTime = MIN_TIME_STEP;
 
-static void stepSim() {
+static void stepSim(bool renderEnabled = true) {
   unsigned long currentTime = millis();
   
   //Time difference between the real time and the simulation time.
@@ -149,7 +154,9 @@ static void stepSim() {
   
   if(timeDelta <= lastFrameTotalTime) {
     //Simulation has caught up to real time (-1 frame back), render another frame
-    render(sim);
+    if(renderEnabled) {
+      render(sim);
+    }
     lastFrameEndTime = millis();
     return;
   }

@@ -6,37 +6,15 @@
 #include "debug.h"
 #include "FSR.h"
 
-void analogForceDynamic(ForceObject& fo, const FixedPoint& timeDelta) {
-  int analogReading = analogRead(fo.m_analogForceData.m_pinNumber);
-  //Serial.print("Analog reading:");
-  //Serial.println(analogReading);
-  FixedPoint force = FSRcalc(analogReading);
-
-  //if(fo.m_analogForceData.m_averagedValue == -1) {
-    fo.m_analogForceData.m_averagedValue = force;
-  //} else {
-  //  fo.m_analogForceData.m_averagedValue = ((fo.m_analogForceData.m_averagedValue * 7) >> 3) + (force >> 3);
-  //}
-  
-  
+void customForceDynamic(ForceObject& fo, const FixedPoint& timeDelta) {  
   Vector3D forceVector = *((Vector3D*)fo.m_analogForceData.m_dynamicForceVector);
-  forceVector.normalize();
-  fo.m_obj->m_force += forceVector * fo.m_analogForceData.m_averagedValue;
-  
-  //Serial.print("Analog Force:");
-  //Serial.print(analogReading);
-  //Serial.print("->");
-  //Serial.print(TO_STRING(force));
-  //Serial.print("N ,");
-  //Serial.println(TO_STRING(MULT(force,FROM_INT(102))));
+  fo.m_obj->m_force += forceVector;
 }
 
-void buildAnalogForce(ForceObject *fo, Object* obj, Vector3D *vector, uint8_t pinNumber) {
+void buildAnalogForce(ForceObject *fo, Object* obj, Vector3D *vector) {
   fo->m_obj = obj;
-  fo->m_generator = analogForceDynamic;
-  fo->m_analogForceData.m_pinNumber = pinNumber;
+  fo->m_generator = customForceDynamic;
   fo->m_analogForceData.m_dynamicForceVector = (void*)vector;
-  fo->m_analogForceData.m_averagedValue = -1;
 }
 
 void gravityForce(ForceObject& fo, const FixedPoint& timeDelta) {

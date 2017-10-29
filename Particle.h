@@ -6,14 +6,14 @@
 #include "Defines.h"
 
 void particleIntegrate(Object& obj, const FixedPoint& timeDelta) {
-  Serial.println("PARTICLE INTEGRATE");
-  Serial.print("Time:");
-  Serial.println(TO_STRING(timeDelta));
-  obj.m_position.print();
-  obj.m_velocity.print();
-  obj.m_acceleration.print();
-  obj.m_force.print();
-  Serial.println();
+  //Serial.println("PARTICLE INTEGRATE");
+  //Serial.print("Time:");
+  //Serial.println(TO_STRING(timeDelta));
+  //obj.m_position.print();
+  //obj.m_velocity.print();
+  //obj.m_acceleration.print();
+  //obj.m_force.print();
+  //Serial.println();
   
   obj.m_position.addScaledVector(obj.m_velocity, timeDelta);
 
@@ -23,11 +23,11 @@ void particleIntegrate(Object& obj, const FixedPoint& timeDelta) {
   obj.m_velocity.addScaledVector(forceAcceleration, timeDelta);
   obj.m_velocity *= obj.m_damping;
   
-  obj.m_position.print();
-  obj.m_velocity.print();
-  forceAcceleration.print();
-  obj.m_force.print();
-  Serial.println();
+  //obj.m_position.print();
+  //obj.m_velocity.print();
+  //forceAcceleration.print();
+  //obj.m_force.print();
+  //Serial.println();
 
   //Serial.println("/OBJECT");  
 }

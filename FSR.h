@@ -39,7 +39,7 @@
  const int64_t c2 = 0x2B943A2; //1.063940729*10^-2
  const int64_t c3 = 0x24DAB3BAE; //2.30339406
  
- FixedPoint FSRcalc(int analogueIn) {
+ FixedPoint FSRCalc(int analogueIn) {
   //Serial.println(analogueIn);
 
   //Avoid shifting x since we would just have to unshift it during multiplication
@@ -68,6 +68,7 @@
   int64_t result = ((x << 53) / denom) << 11;
   //Serial.print("result:");
   //Serial.println(format64(result));
+  //convert from grams to newtons.
   return DIV((FixedPoint)(result >> (32 - SHIFT_VAL)),FROM_INT(102));
  }
 
@@ -76,7 +77,7 @@
   for(int i = 0; i < 17; i++) {
     Serial.print(vals[i]);
     Serial.print(": ");
-    Serial.println(TO_STRING(FSRcalc(vals[i])));
+    Serial.println(TO_STRING(FSRCalc(vals[i])));
   }
  }
 

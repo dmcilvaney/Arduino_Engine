@@ -29,7 +29,7 @@ struct Object {
   FixedPoint m_invMass;
   
 
-  FixedPoint m_damping = FROM_INT_SHIFT(9,1);
+  FixedPoint m_damping = FROM_INT_SHIFT(99,2);
 
   Vector3D m_penetrationAdjustment;
 
@@ -54,7 +54,7 @@ struct ForceObject {
   union {
     GravityForceData m_gravData;
     SpringForceData m_springData;
-    AnalogForceData m_analogForceData;
+    CustomForceData m_analogForceData;
   };
 };
 
