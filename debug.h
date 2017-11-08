@@ -108,9 +108,12 @@ inline void debug_internal(const String &string, const DebugType &debugType, con
 #endif
 }
 
+#ifndef FLOATING_POINT_MODE
 inline void debug_internal(const float &floatVal, const DebugType &debugType) {
   debug_internal(String(floatVal), debugType);
 }
+#endif
+
 inline void debug_internal(const FixedPoint &fpVal, const DebugType &debugType) {
 #if FIXED_SIZE == 64
   debug_internal(format64(fpVal), debugType);
@@ -118,16 +121,21 @@ inline void debug_internal(const FixedPoint &fpVal, const DebugType &debugType) 
   debug_internal(String(fpVal), debugType);
 #endif
 }
+
+#if FIXED_SIZE != 16
 inline void debug_internal(const int &intVal, const DebugType &debugType) {
   debug_internal(String(intVal), debugType);
 }
+#endif
 
 inline void debugln_internal(const String &string, const DebugType &debugType) {
   debug_internal(string, debugType, true);
 }
+#ifndef FLOATING_POINT_MODE
 inline void debugln_internal(const float &floatVal, const DebugType &debugType) {
   debug_internal(String(floatVal), debugType, true);
 }
+#endif
 inline void debugln_internal(const FixedPoint &fpVal, const DebugType &debugType) {
 #if FIXED_SIZE == 64
   debug_internal(format64(fpVal), debugType, true);
@@ -135,9 +143,11 @@ inline void debugln_internal(const FixedPoint &fpVal, const DebugType &debugType
   debug_internal(String(fpVal), debugType, true);
 #endif
 }
+#if FIXED_SIZE != 16
 inline void debugln_internal(const int &intVal, const DebugType &debugType) {
   debug_internal(String(intVal), debugType, true);
 }
+#endif
 inline void debugln_internal(const DebugType debugType) {
   debug_internal("", debugType, true);
 }

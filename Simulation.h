@@ -88,24 +88,17 @@ void checkLimits() {
         o->m_position.m_x = 0;
         o->m_velocity.m_x = o->m_velocity.m_x*-1;
       }
-      if(o->m_position.m_y <= 0 && o->m_velocity.m_y < 0) {
-        o->m_position.m_y = 1;
+      if(o->m_position.m_y < 0 && o->m_velocity.m_y < 0) {
+        o->m_position.m_y = 0;
         Serial.print("B");
         Serial.print(TO_STRING(o->m_velocity.m_y));
         Serial.print(',');
         Serial.print(TO_STRING(o->m_velocity.m_x));
-        if(o->m_velocity.m_y > FROM_INT_SHIFT(4,1)) {
-        o->m_velocity.m_x = MULT(o->m_velocity.m_x,-1*(FROM_INT_SHIFT(5,1)));
-        o->m_velocity.m_y = MULT(o->m_velocity.m_y,-1*(FROM_INT_SHIFT(5,1)));
-        } else {
-          o->m_velocity.m_x = 0;
-          o->m_velocity.m_y = 0;
-        }
+        o->m_velocity *= FROM_INT_SHIFT(-5,1);
         Serial.print("->");
         Serial.print(TO_STRING(o->m_velocity.m_y));
         Serial.print(',');
-        Serial.println(TO_STRING(o->m_velocity.m_x));
-        
+        Serial.println(TO_STRING(o->m_velocity.m_x));        
       }
       if(o->m_position.m_z <= 0 && o->m_velocity.m_z < 0) {
         Serial.println('b');

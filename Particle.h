@@ -17,10 +17,9 @@ void particleIntegrate(Object& obj, const FixedPoint& timeDelta) {
   
   obj.m_position.addScaledVector(obj.m_velocity, timeDelta);
 
-  Vector3D forceAcceleration = obj.m_acceleration;
-  forceAcceleration.addScaledVector(obj.m_force, obj.m_invMass);
+  obj.m_acceleration = obj.m_force *  obj.m_invMass;
   
-  obj.m_velocity.addScaledVector(forceAcceleration, timeDelta);
+  obj.m_velocity.addScaledVector(obj.m_acceleration, timeDelta);
   obj.m_velocity *= obj.m_damping;
   
   //obj.m_position.print();

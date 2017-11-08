@@ -11,7 +11,7 @@ void customForceDynamic(ForceObject& fo, const FixedPoint& timeDelta) {
   fo.m_obj->m_force += forceVector;
 }
 
-void buildAnalogForce(ForceObject *fo, Object* obj, Vector3D *vector) {
+void buildCustomForce(ForceObject *fo, Object* obj, Vector3D *vector) {
   fo->m_obj = obj;
   fo->m_generator = customForceDynamic;
   fo->m_analogForceData.m_dynamicForceVector = (void*)vector;

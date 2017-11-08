@@ -9,8 +9,8 @@ Servo leverServo;
 
 #define A_UP 0
 #define A_DOWN 1
-#define A_SPEED 2
-#define A_SWING 3
+#define A_SWING 2
+#define A_LEVER_LENGTH 3
 
 //#define TESTMODE
 #define TESTNUM  10000
@@ -21,6 +21,7 @@ Servo leverServo;
 #include "Simulation.h"
 Object* pivotObj;
 Object* rodEnd;
+ConstraintObject* leverRodConstraint;
 
 
 Vector3D analogueForce;
@@ -54,7 +55,7 @@ void setup() {
   pivotObj->m_inUse = true;
   pivotObj->m_objectType = PARTICLE;
   //Location: .3m, 0.15m, 0m
-  pivotObj->m_position = Vector3D(FROM_INT_SHIFT(3,1),FROM_INT_SHIFT(15,2),FROM_INT(0));
+  pivotObj->m_position = Vector3D(FROM_INT_SHIFT(38,2),FROM_INT_SHIFT(15,2),FROM_INT(0));
   pivotObj->m_velocity = Vector3D(0,0,0);
   pivotObj->m_invMass = 0;//DIV(FROM_INT(1),FROM_INT(1));
   pivotObj->m_particleData.m_radius = ZERO;
@@ -62,20 +63,21 @@ void setup() {
   rodEnd = simulationGetFreeObject();
   rodEnd->m_inUse = true;
   rodEnd->m_objectType = PARTICLE;
-  rodEnd->m_position = Vector3D(FROM_INT_SHIFT(1,1),FROM_INT_SHIFT(15,2),FROM_INT(0));
+  rodEnd->m_position = Vector3D(FROM_INT_SHIFT(1,1),FROM_INT_SHIFT(0,2),FROM_INT(0));
   rodEnd->m_velocity = Vector3D(0,0,0);
   //0.5 kg
-  rodEnd->m_invMass = DIV(FROM_INT(1),FROM_INT_SHIFT(5,1));
-  rodEnd->m_particleData.m_radius = FROM_INT_SHIFT(5,2);
+  rodEnd->m_invMass = DIV(FROM_INT(1),FROM_INT_SHIFT(1,1));
+  rodEnd->m_particleData.m_radius = FROM_INT_SHIFT(1,2);
   
-  //buildGravityForce(simulationGetFreeForce(), rodEnd);
+  buildGravityForce(simulationGetFreeForce(), rodEnd);
   
   //buildSpringForce(simulationGetFreeForce(), p3, &(p2->m_position), FROM_INT(2), FROM_INT(4), false);
   //buildSpringForce(simulationGetFreeForce(), p2, &(p3->m_position), FROM_INT(2), FROM_INT(4), false);
   
-  buildRodConstraint(simulationGetFreeConstraint(), pivotObj, rodEnd, FROM_INT_SHIFT(25,2));
+  leverRodConstraint = simulationGetFreeConstraint();
+  buildRodConstraint(leverRodConstraint, pivotObj, rodEnd, FROM_INT_SHIFT(15,2));
 
-  //buildAnalogForce(simulationGetFreeForce(), rodEnd, &analogueForce);
+  buildCustomForce(simulationGetFreeForce(), rodEnd, &analogueForce);
   
   //buildSpringForce(simulationGetFreeForce(), a, &(c->m_position), ONE, FROM_INT(15), false);
 #endif
@@ -96,98 +98,104 @@ Vector3D calculateLeverForceVector(Vector3D leverVector) {
 FixedPoint calculateLeverAngle(Vector3D leverVector) {
   Vector3D leverAngleVector = leverVector;
   FixedPoint angle = fp_arctangent2(leverAngleVector.m_x, leverAngleVector.m_y);
+  //Serial.print("init angle");
+  //Serial.println(TO_STRING(angle));
   angle = DIV(MULT(angle, FROM_INT(180)), FP_PI);
+  //Serial.print("deg angle");
+  //Serial.println(TO_STRING(angle));
   angle = FROM_INT(270) - angle;
+  //Serial.print("angle2:");
+  //Serial.println(TO_STRING(angle));
   return angle - FROM_INT(45);
 }
 
-int servoMicroseconds = 1500;
+#define SERVO_MEASUREMENTS 3
+int servoMicroseconds[SERVO_MEASUREMENTS];
+int currentServo = SERVO_MEASUREMENTS+1;
 int moveServo(FixedPoint angle) {
+  
   FixedPoint uSec = MULT(DIV(angle,FROM_INT(65)), FROM_INT(550));  
   int microseconds = 1500 +  TO_INT(uSec);
-  servoMicroseconds = ((servoMicroseconds) >> 1) + (microseconds >> 1);
-  //servoMicroseconds = microseconds;
-  servoMicroseconds = max(1500, min(2050, servoMicroseconds));
-  leverServo.writeMicroseconds(servoMicroseconds);
+  microseconds = max(1500, min(2050, microseconds));
+
+  if(currentServo > SERVO_MEASUREMENTS) {
+    for(int i = 0;i < SERVO_MEASUREMENTS; i++) {
+      servoMicroseconds[i] = microseconds;
+    }
+  }
+  servoMicroseconds[(currentServo++)%SERVO_MEASUREMENTS] = microseconds;
+  
+  int32_t avgMicroseconds = 0;
+  for(int i = 0;i < SERVO_MEASUREMENTS; i++) {
+    avgMicroseconds += servoMicroseconds[i];
+  }
+  leverServo.writeMicroseconds(avgMicroseconds/SERVO_MEASUREMENTS);
+}
+
+FixedPoint calculateLeverLength() {
+  int a = analogRead(A_LEVER_LENGTH);
+  //Vary length between 5cm and 50cm
+  return FROM_INT_SHIFT(map(a,1023,0,230,380),3);
 }
 
 
-
-
+#define FSR_MEASUREMENTS 2
+FixedPoint fsrReadings[FSR_MEASUREMENTS];
+int currentFsrReading = FSR_MEASUREMENTS+1;
 void loop() {
 #ifndef TESTMODE
 
-  for(FixedPoint a = FROM_INT_SHIFT(5,1); a < FROM_INT_SHIFT(30,0); a+=FROM_INT_SHIFT(3,1)) { 
-
-    Vector3D lever = calculateLeverVector();
-    
-    rodEnd->m_acceleration = calculateLeverForceVector(calculateLeverVector())*a;
-    while(calculateLeverAngle(lever) < FROM_INT(65)) {
-      
-      stepSim(false);
-      
-      lever = calculateLeverVector();
-      rodEnd->m_acceleration = calculateLeverForceVector(lever)*a;
-      FixedPoint angle = calculateLeverAngle(lever);
-      moveServo(angle);
-      
-      Serial.print(TO_STRING(rodEnd->m_velocity.magnitude() ));
-      Serial.print(',');
-      Serial.print(TO_STRING(rodEnd->m_acceleration.magnitude()));
-      Serial.print(',');
-      Serial.print(TO_STRING(FSRCalc(analogRead(A_UP))));
-      Serial.print(',');
-      Serial.println(TO_STRING(FSRCalc(analogRead(A_DOWN))));
-    }
-    rodEnd->m_velocity = Vector3D(0,0,0);
-    rodEnd->m_acceleration = Vector3D(0,0,0);
-    for(int i = 0; i < 500; i++) {
-      delay(1);
-      stepSim(false);
-    } 
-    
-    rodEnd->m_acceleration = calculateLeverForceVector(calculateLeverVector())*a;
-    while(calculateLeverAngle(lever) > FROM_INT(15)) {    
-      
-      stepSim(false);
-
-      lever = calculateLeverVector();
-      Vector3D lever = calculateLeverVector();
-      rodEnd->m_acceleration = calculateLeverForceVector(lever)*(a*-1);
-      FixedPoint angle = calculateLeverAngle(lever);
-      moveServo(angle);
-      
-      Serial.print(TO_STRING(rodEnd->m_velocity.magnitude() ));
-      Serial.print(',');
-      Serial.print(TO_STRING(rodEnd->m_acceleration.magnitude()));
-      Serial.print(',');
-      Serial.print(TO_STRING(FSRCalc(analogRead(A_UP))));
-      Serial.print(',');
-      Serial.println(TO_STRING(FSRCalc(analogRead(A_DOWN))));
-    }     
-    rodEnd->m_velocity = Vector3D(0,0,0);
-    rodEnd->m_acceleration = Vector3D(0,0,0);
-    for(int i = 0; i < 500; i++) {
-      delay(1);
-      stepSim(false);
-    }
-  }
-  for(;;);
-
-
   Vector3D lever = calculateLeverVector();
   //Newtons at 4 cm.
-  FixedPoint torque = FSRCalc(A_UP) - FSRCalc(A_DOWN);
+
+  fsrReadings[(currentFsrReading++)%FSR_MEASUREMENTS] = FSRCalc(analogRead(A_DOWN)) - FSRCalc(analogRead(A_UP));
+  FixedPoint averageFsrReading = 0;
+  for(int i = 0; i < FSR_MEASUREMENTS; i++) {
+    averageFsrReading += fsrReadings[i];
+  }
+  FixedPoint torque = DIV(averageFsrReading,FROM_INT(FSR_MEASUREMENTS));
+
+  Serial.print("T=");
+  Serial.println(TO_STRING(torque));
 
   analogueForce = calculateLeverForceVector(lever) * torque;
+  Vector3D accelDirection = rodEnd->m_velocity;
+  Serial.print("accel:");accelDirection.print();
+  Serial.println();
+  accelDirection.normalize();
+  FixedPoint coincidentAcceleration = analogueForce * accelDirection;
+  if(coincidentAcceleration < FROM_INT(-5)) {
+    Serial.println(TO_STRING(coincidentAcceleration));
+    coincidentAcceleration *= -1;
+    //coincidentAcceleration = DIV(coincidentAcceleration,2);
+    if(coincidentAcceleration < ONE) {
+      coincidentAcceleration = ONE;
+    }
+    FixedPoint dampingMultiplier = DIV(ONE,coincidentAcceleration);
+    rodEnd->m_velocity *= dampingMultiplier;
+  }
+  //analogueForce.print();
   //Counter force applied by movement.
-  analogueForce -= rodEnd->m_acceleration * FROM_INT_SHIFT(7,2);
+  //analogueForce -= (rodEnd->m_acceleration * FROM_INT_SHIFT(3,0));
+  
+  analogueForce -= (rodEnd->m_velocity * FROM_INT_SHIFT(1,0));
+  //analogueForce.print();
 
   FixedPoint mechAdvantage = DIV(FROM_INT_SHIFT(4,2),lever.magnitude());
+  //Serial.print("ma=");
+  //Serial.println(TO_STRING(mechAdvantage));
 
   analogueForce *= mechAdvantage;
 
-  moveServo(calculateLeverAngle(lever));
+  FixedPoint leverAngle = calculateLeverAngle(lever);
+  //Serial.println(TO_STRING(leverAngle));
+  if((leverAngle > FROM_INT(60) && rodEnd->m_velocity.m_y > 0) || (leverAngle < FROM_INT(0) && rodEnd->m_velocity.m_y < 0)) {
+    rodEnd->m_velocity*= FROM_INT_SHIFT(-5,1);
+  }
+
+  moveServo(leverAngle);
+
+  leverRodConstraint->m_rodData.m_length = calculateLeverLength();
   
   stepSim();
 #endif
@@ -256,7 +264,7 @@ void test() {
 
 
   Serial.println("Testing arctan PI/4   ");
-  FixedPoint at0 = fp_arctan_lookup((FP_PI>>2) - (EPSILON+ EPSILON + EPSILON));
+  FixedPoint at0 = fp_arctan_lookup((DIV(FP_PI,FROM_INT(4))) - (EPSILON+ EPSILON + EPSILON));
   Serial.print("atan=");
   Serial.println(TO_STRING(at0));
   
