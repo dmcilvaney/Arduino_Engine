@@ -84,39 +84,39 @@ void checkLimits() {
     Object *o = &sim.m_worldObjects[i];
     if(o->m_inUse) {      
       if(o->m_position.m_x <= 0 && o->m_velocity.m_x < 0) {
-        Serial.println('a');
+        //Serial.println('a');
         o->m_position.m_x = 0;
         o->m_velocity.m_x = o->m_velocity.m_x*-1;
       }
       if(o->m_position.m_y < 0 && o->m_velocity.m_y < 0) {
         o->m_position.m_y = 0;
-        Serial.print("B");
-        Serial.print(TO_STRING(o->m_velocity.m_y));
-        Serial.print(',');
-        Serial.print(TO_STRING(o->m_velocity.m_x));
+        //Serial.print("B");
+        //Serial.print(TO_STRING(o->m_velocity.m_y));
+        //Serial.print(',');
+        //Serial.print(TO_STRING(o->m_velocity.m_x));
         o->m_velocity *= FROM_INT_SHIFT(-5,1);
-        Serial.print("->");
-        Serial.print(TO_STRING(o->m_velocity.m_y));
-        Serial.print(',');
-        Serial.println(TO_STRING(o->m_velocity.m_x));        
+        //Serial.print("->");
+        //Serial.print(TO_STRING(o->m_velocity.m_y));
+        //Serial.print(',');
+        //Serial.println(TO_STRING(o->m_velocity.m_x));        
       }
       if(o->m_position.m_z <= 0 && o->m_velocity.m_z < 0) {
-        Serial.println('b');
+        //Serial.println('b');
         o->m_position.m_z = 0;
         o->m_velocity.m_z = 0;
       }
       if(o->m_position.m_x >= FROM_INT(WORLD_SIZE_X) && o->m_velocity.m_x > 0) {
-        Serial.println('c');
+        //Serial.println('c');
         o->m_position.m_x = FROM_INT(WORLD_SIZE_X);
         o->m_velocity.m_x = 0;
       }
       if(o->m_position.m_y >= FROM_INT(WORLD_SIZE_Y) && o->m_velocity.m_y > 0) {
-        Serial.println('d');
+        //Serial.println('d');
         o->m_position.m_y = FROM_INT(WORLD_SIZE_Y);
         o->m_velocity.m_y = 0;
       }
       if(o->m_position.m_z >= FROM_INT(WORLD_SIZE_Z) && o->m_velocity.m_z > 0) {
-        Serial.println('d');
+        //Serial.println('d');
         o->m_position.m_z = FROM_INT(WORLD_SIZE_Z);
         o->m_velocity.m_z = 0;
       }
@@ -180,6 +180,7 @@ static void stepSim(bool renderEnabled = true) {
   sim.m_activeContacts = 0;
 
   //Add constraint derived contacts
+  PROFILE_ON(PROFILE_COLLISION);
   for(int i = 0; i < sim.m_numConstraints; i++) {
     if(sim.m_worldConstraints[i].m_generator != NULL) {
       debug("Checking constraint collision ", DEBUG_SIM);
@@ -246,6 +247,7 @@ static void stepSim(bool renderEnabled = true) {
     resolveContact(sim.m_worldContacts[worstCollision], sec);
     totalCollisions++;
   }
+  PROFILE_OFF(PROFILE_COLLISION);
 
   checkLimits();
   

@@ -16,9 +16,6 @@
 #define SCREEN_INT_POSITION(i) (i>>3)
 #define SCREEN_LOC(x, y) y*SCREEN_X + x
 
-#define SCALE_X 1
-#define SCALE_Y 1
-
 #define FRAME_DELAY 50
 
 int8_t screen[SCREEN_SIZE(SCREEN_X,SCREEN_Y)];
@@ -29,21 +26,6 @@ inline void setPixel(int x, int y) {
   }
   int index = SCREEN_LOC(x,y);
   screen[SCREEN_INT_POSITION(index)] |= SCREEN_BIT(index);
-  //Serial.print("x:");
-  //Serial.print(x);
-  //Serial.print("y:");
-  //Serial.println(y);
-  /*
-  Serial.print('(');
-  Serial.print(x);
-  Serial.print(',');
-  Serial.print(y);
-  Serial.print(") -> (W:");
-  Serial.print(SCREEN_INT_POSITION(index));
-  Serial.print(",B:");
-  Serial.print(SCREEN_BIT_NUMBER(index));
-  Serial.print(')');
-  */
 }
 
 inline void clearPixel(int x, int y) {
@@ -80,15 +62,7 @@ void drawCircle(FixedPoint xFP, FixedPoint yFP, FixedPoint rFP) {
   int f = 1 - radius;
   int ddf_x = 1;
   int ddf_y = -2 * radius;
-
-  /*Serial.println();
-  Serial.print("Draw circle at (");
-  Serial.print(x0);
-  Serial.print(',');
-  Serial.print(y0);
-  Serial.print(") with radius ");
-  Serial.println(radius);*/
-
+  
   setPixel(x0, y0 + radius);
   setPixel(x0, y0 - radius);
   setPixel(x0 + radius, y0);
@@ -125,7 +99,7 @@ void particleDraw(const Object &obj) {
   Serial.println(TO_INT(y));
 #endif
   int screenX = TO_INT(x) ;
-  int screenY = TO_INT(y) * SCALE_Y;
+  int screenY = TO_INT(y);
 #ifdef DEBUG
   Serial.print(screenX);
   Serial.print(",");
@@ -180,13 +154,12 @@ void drawScreen() {
 
 unsigned long lastUpdate = 0;
 void render(const Simulation& sim) {
-  
-
-  if(millis() - lastUpdate < FRAME_DELAY) {
-    return;
-  }
   PROFILE_ON(PROFILE_RENDER);
-  
+  if(millis() - lastUpdate < FRAME_DELAY) {
+    PROFILE_OFF(PROFILE_RENDER);
+    return;
+  }  
+  lastUpdate = millis();
   clearScreen();
   for (int i = 0; i < NUM_OBJECTS; i++) {
 #ifdef DEBUG
@@ -199,7 +172,6 @@ void render(const Simulation& sim) {
   }
   Serial.println();
   drawScreen();
-  lastUpdate = millis();
   PROFILE_OFF(PROFILE_RENDER);
 }
 

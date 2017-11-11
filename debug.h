@@ -8,8 +8,6 @@
 
 enum DebugType {DEBUG_GENERAL, DEBUG_COLLISION, DEBUG_CONSTRAINT, DEBUG_FIXEDPOINT, DEBUG_FORCE, DEBUG_PARTICLE, DEBUG_RENDERER, DEBUG_SIM, DEBUG_VECTOR};
 
-enum ProfileType {PROFILE_SIM=2, PROFILE_RENDER=3, PROFILE_COLLISION=4};
-
 #define DEBUG_ON (defined( DEBUG_GENERAL_ENABLED) || defined( DEBUG_COLLISION_ENABLED)  || defined( DEBUG_FIXEDPOINT_ENABLED)  || defined( DEBUG_FORCE_ENABLED)  || defined( DEBUG_RENDERER_ENABLED)  || defined( DEBUG_SIM_ENABLED) ||  defined( DEBUG_VECTOR_ENABLED) ||  defined( DEBUG_CONSTRAINT_ENABLED))
 #if DEBUG_ON
 #define debug(s, c) (debug_internal(s, c))
@@ -18,22 +16,6 @@ enum ProfileType {PROFILE_SIM=2, PROFILE_RENDER=3, PROFILE_COLLISION=4};
 #define debug(s, c)
 #define debugln(s, c)
 #endif
-
-inline void PROFILE_INIT() {
-  pinMode(PROFILE_SIM, OUTPUT);
-  digitalWrite(PROFILE_SIM, LOW);
-  pinMode(PROFILE_RENDER, OUTPUT);
-  digitalWrite(PROFILE_RENDER, LOW);
-  pinMode(PROFILE_COLLISION, OUTPUT);
-  digitalWrite(PROFILE_COLLISION, LOW);
-}
-
-inline void PROFILE_ON(ProfileType type) {
-      digitalWrite(type,HIGH);
-}
-inline void PROFILE_OFF(ProfileType type) {
-      digitalWrite(type,LOW);
-}
 
 inline void debug_internal(const String &string, const DebugType &debugType, const bool newLine = false) {
 #if DEBUG_ON

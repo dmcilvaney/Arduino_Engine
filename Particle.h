@@ -41,7 +41,8 @@ void particleGravityForce(const ForceObject& fo, const FixedPoint& timeDelta, co
 void particleSpringForce(const ForceObject& fo, const FixedPoint& timeDelta, const void* endpoint, const FixedPoint& springConstant, const FixedPoint& restLength) {
   //Serial.println("Particle spring");
   Vector3D displacement = fo.m_obj->m_position - (*(Vector3D*)endpoint);
-  FixedPoint forceMagnitude = MULT(ABS(displacement.magnitude() - restLength), springConstant);
+  FixedPoint springError = displacement.magnitude() - restLength;
+  FixedPoint forceMagnitude = MULT(springError, springConstant);
   //displacement.print();
   //Serial.println(TO_STRING(forceMagnitude));
   Vector3D force = displacement;
@@ -49,7 +50,12 @@ void particleSpringForce(const ForceObject& fo, const FixedPoint& timeDelta, con
   force *= -forceMagnitude;
 #ifdef DEBUG
   Serial.print("Displacement:");
-  displacement.print();  
+  displacement.print();
+  Serial.println(TO_STRING(displacement.magnitude()));
+  Serial.print("Rod length:");
+  Serial.println(TO_STRING(restLength));
+  Serial.print("Delta:");
+  Serial.println(TO_STRING(springError));
   Serial.print("Magnitude:");
   Serial.println(TO_STRING(forceMagnitude));
   Serial.print("Force:");
@@ -61,7 +67,7 @@ void particleSpringForce(const ForceObject& fo, const FixedPoint& timeDelta, con
 
 
   displacement.normalize();
-  Vector3D dampingForce = displacement * (fo.m_obj->m_velocity * displacement) * FROM_INT(5);
+  Vector3D dampingForce = displacement * (fo.m_obj->m_velocity * displacement) * FROM_INT_SHIFT(2,1);
   fo.m_obj->m_force -= dampingForce;
   
 }

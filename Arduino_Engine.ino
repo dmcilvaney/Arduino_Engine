@@ -2,6 +2,7 @@
 #include "Vector.h"
 #include "debug.h"
 #include "FixedPoint.h"
+#include "profile.h"
 
 #include <Servo.h>
 
@@ -9,7 +10,7 @@ Servo leverServo;
 
 #define A_UP 0
 #define A_DOWN 1
-#define A_SWING 2
+#define A_SPRING_STRENGTH 2
 #define A_LEVER_LENGTH 3
 
 //#define TESTMODE
@@ -21,7 +22,11 @@ Servo leverServo;
 #include "Simulation.h"
 Object* pivotObj;
 Object* rodEnd;
+Object* weightObj;
 ConstraintObject* leverRodConstraint;
+
+ForceObject* springForce1;
+ForceObject* springForce2;
 
 
 Vector3D analogueForce;
@@ -65,14 +70,26 @@ void setup() {
   rodEnd->m_objectType = PARTICLE;
   rodEnd->m_position = Vector3D(FROM_INT_SHIFT(1,1),FROM_INT_SHIFT(0,2),FROM_INT(0));
   rodEnd->m_velocity = Vector3D(0,0,0);
-  //0.5 kg
-  rodEnd->m_invMass = DIV(FROM_INT(1),FROM_INT_SHIFT(1,1));
-  rodEnd->m_particleData.m_radius = FROM_INT_SHIFT(1,2);
+  //0.1 kg
+  rodEnd->m_invMass = DIV(FROM_INT(1),FROM_INT_SHIFT(5,2));
+  rodEnd->m_particleData.m_radius = FROM_INT_SHIFT(3,2);
+
+  weightObj = simulationGetFreeObject();
+  weightObj->m_inUse = true;
+  weightObj->m_objectType = PARTICLE;
+  weightObj->m_position = Vector3D(FROM_INT_SHIFT(2,1),FROM_INT_SHIFT(2,2),FROM_INT(0));
+  weightObj->m_velocity = Vector3D(0,0,0);
+  //0.1 kg
+  weightObj->m_invMass = DIV(FROM_INT(1),FROM_INT_SHIFT(5,2));
+  weightObj->m_particleData.m_radius = FROM_INT_SHIFT(3,2);
   
   buildGravityForce(simulationGetFreeForce(), rodEnd);
-  
-  //buildSpringForce(simulationGetFreeForce(), p3, &(p2->m_position), FROM_INT(2), FROM_INT(4), false);
-  //buildSpringForce(simulationGetFreeForce(), p2, &(p3->m_position), FROM_INT(2), FROM_INT(4), false);
+  buildGravityForce(simulationGetFreeForce(), weightObj);
+
+  springForce1 = simulationGetFreeForce();  
+  buildSpringForce(springForce1, weightObj, &(rodEnd->m_position), FROM_INT_SHIFT(11,2), FROM_INT(15), false);
+  springForce2 = simulationGetFreeForce();
+  buildSpringForce(springForce2, rodEnd, &(weightObj->m_position), FROM_INT_SHIFT(11,2), FROM_INT(15), false);
   
   leverRodConstraint = simulationGetFreeConstraint();
   buildRodConstraint(leverRodConstraint, pivotObj, rodEnd, FROM_INT_SHIFT(15,2));
@@ -91,6 +108,7 @@ Vector3D calculateLeverVector() {
 Vector3D calculateLeverForceVector(Vector3D leverVector) {
   Vector3D leverForceVector = leverVector;
   leverForceVector.normalize();
+  //Cross product will give perpendicular vector.
   leverForceVector = leverForceVector % Vector3D(0,0,ONE);
   return leverForceVector;
 }
@@ -98,18 +116,12 @@ Vector3D calculateLeverForceVector(Vector3D leverVector) {
 FixedPoint calculateLeverAngle(Vector3D leverVector) {
   Vector3D leverAngleVector = leverVector;
   FixedPoint angle = fp_arctangent2(leverAngleVector.m_x, leverAngleVector.m_y);
-  //Serial.print("init angle");
-  //Serial.println(TO_STRING(angle));
   angle = DIV(MULT(angle, FROM_INT(180)), FP_PI);
-  //Serial.print("deg angle");
-  //Serial.println(TO_STRING(angle));
   angle = FROM_INT(270) - angle;
-  //Serial.print("angle2:");
-  //Serial.println(TO_STRING(angle));
   return angle - FROM_INT(45);
 }
 
-#define SERVO_MEASUREMENTS 3
+#define SERVO_MEASUREMENTS 1
 int servoMicroseconds[SERVO_MEASUREMENTS];
 int currentServo = SERVO_MEASUREMENTS+1;
 int moveServo(FixedPoint angle) {
@@ -138,6 +150,12 @@ FixedPoint calculateLeverLength() {
   return FROM_INT_SHIFT(map(a,1023,0,230,380),3);
 }
 
+FixedPoint calculateSpringStrength() {
+  int a = analogRead(A_SPRING_STRENGTH);
+  //Vary length between 5cm and 50cm
+  return FROM_INT_SHIFT(map(a,1023,0,100,300),1);
+}
+
 
 #define FSR_MEASUREMENTS 2
 FixedPoint fsrReadings[FSR_MEASUREMENTS];
@@ -155,30 +173,15 @@ void loop() {
   }
   FixedPoint torque = DIV(averageFsrReading,FROM_INT(FSR_MEASUREMENTS));
 
-  Serial.print("T=");
-  Serial.println(TO_STRING(torque));
+//  Serial.print("T=");
+//  Serial.println(TO_STRING(torque));
 
   analogueForce = calculateLeverForceVector(lever) * torque;
-  Vector3D accelDirection = rodEnd->m_velocity;
-  Serial.print("accel:");accelDirection.print();
-  Serial.println();
-  accelDirection.normalize();
-  FixedPoint coincidentAcceleration = analogueForce * accelDirection;
-  if(coincidentAcceleration < FROM_INT(-5)) {
-    Serial.println(TO_STRING(coincidentAcceleration));
-    coincidentAcceleration *= -1;
-    //coincidentAcceleration = DIV(coincidentAcceleration,2);
-    if(coincidentAcceleration < ONE) {
-      coincidentAcceleration = ONE;
-    }
-    FixedPoint dampingMultiplier = DIV(ONE,coincidentAcceleration);
-    rodEnd->m_velocity *= dampingMultiplier;
-  }
   //analogueForce.print();
   //Counter force applied by movement.
   //analogueForce -= (rodEnd->m_acceleration * FROM_INT_SHIFT(3,0));
   
-  analogueForce -= (rodEnd->m_velocity * FROM_INT_SHIFT(1,0));
+  //analogueForce -= (rodEnd->m_velocity * FROM_INT_SHIFT(1,0));
   //analogueForce.print();
 
   FixedPoint mechAdvantage = DIV(FROM_INT_SHIFT(4,2),lever.magnitude());
@@ -196,6 +199,21 @@ void loop() {
   moveServo(leverAngle);
 
   leverRodConstraint->m_rodData.m_length = calculateLeverLength();
+  springForce1->m_springData.m_springConstant = calculateSpringStrength();
+  springForce2->m_springData.m_springConstant = calculateSpringStrength();
+
+  Vector3D accelDirection = rodEnd->m_velocity;
+  accelDirection.normalize();
+  FixedPoint coincidentAcceleration = analogueForce * accelDirection;
+  FixedPoint threshold = FROM_INT_SHIFT(5,1);
+  if(coincidentAcceleration < -threshold) {
+    coincidentAcceleration *= -1;
+    if(coincidentAcceleration < threshold) {
+      coincidentAcceleration = threshold;
+    }
+    FixedPoint dampingMultiplier = DIV(threshold,coincidentAcceleration);
+    rodEnd->m_velocity *= dampingMultiplier;
+  }
   
   stepSim();
 #endif

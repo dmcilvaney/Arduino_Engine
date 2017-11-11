@@ -30,7 +30,7 @@ typedef float FixedPoint;
 const FixedPoint ONE = FROM_INT(1);
 const FixedPoint ZERO = 0;
 const FixedPoint POINT_FIVE = DIV(ONE, FROM_INT(2));
-const FixedPoint EPSILON = DIV(ONE, FROM_INT(1000));
+const FixedPoint EPSILON = DIV(ONE, FROM_INT(100));
 const FixedPoint G = DIV(FROM_INT(981), FROM_INT(100));
 #define FP_PI PI
 

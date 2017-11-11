@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Defines.h"
+#include "profile.h"
 #include <avr/pgmspace.h>
 
 
@@ -120,6 +121,7 @@ String format64(int64_t val) {
 }
 
 inline FixedPoint fp_multiply(FixedPoint m1, FixedPoint m2) {
+  PROFILE_ON(PROFILE_OPERATOR);
   int signFlip = 1;
   if (m1 < 0) {
     m1 *= -1;
@@ -129,11 +131,14 @@ inline FixedPoint fp_multiply(FixedPoint m1, FixedPoint m2) {
     m2 *= -1;
     signFlip *= -1;
   }
-  return (FixedPoint)((((FixedPointLarge)m1) * ((FixedPointLarge)m2)) >> SHIFT_VAL) * signFlip;
+  FixedPoint result = (FixedPoint)((((FixedPointLarge)m1) * ((FixedPointLarge)m2)) >> SHIFT_VAL) * signFlip;
+  PROFILE_OFF(PROFILE_OPERATOR);
+  return result;
 }
 
 
 inline FixedPoint fp_divide( FixedPoint num, FixedPoint denom) {
+  PROFILE_ON(PROFILE_OPERATOR);
   int signFlip = 1;
   if (num < 0) {
     num *= -1;
@@ -143,7 +148,9 @@ inline FixedPoint fp_divide( FixedPoint num, FixedPoint denom) {
     denom *= -1;
     signFlip *= -1;
   }
-  return (FixedPoint)(((FixedPointLarge)(num) << SHIFT_VAL) / denom) * signFlip;
+  FixedPoint result = (FixedPoint)(((FixedPointLarge)(num) << SHIFT_VAL) / denom) * signFlip;
+  PROFILE_OFF(PROFILE_OPERATOR);
+  return result ;
 }
 inline FixedPoint fp_fromIntShift(int64_t a, int decimalShift) {
   a <<= 32;
@@ -155,6 +162,7 @@ inline FixedPoint fp_fromIntShift(int64_t a, int decimalShift) {
 }
 
 FixedPoint fp_sRoot(FixedPoint num) {
+  PROFILE_ON(PROFILE_SQRT);
   uint32_t root, remHi, remLo, testDiv;
   root = 0;
   remHi = 0;
@@ -169,6 +177,7 @@ FixedPoint fp_sRoot(FixedPoint num) {
       root += 1;
     }
   } while (count -- != 0);
+  PROFILE_OFF(PROFILE_SQRT);
   return root;
 }
 
