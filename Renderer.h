@@ -16,36 +16,96 @@
 #define SCREEN_INT_POSITION(i) (i>>3)
 #define SCREEN_LOC(x, y) y*SCREEN_X + x
 
-#define FRAME_DELAY 50
+#define FRAME_DELAY 70
 
-int8_t screen[SCREEN_SIZE(SCREEN_X,SCREEN_Y)];
+int8_t screen1[SCREEN_SIZE(SCREEN_X,SCREEN_Y)];
+int8_t screen2[SCREEN_SIZE(SCREEN_X,SCREEN_Y)];
 
-inline void setPixel(int x, int y) {
+inline void setPixel(int x, int y, int screenNum = 1) {
   if (x < 0 || y < 0 || x >= SCREEN_X || y >= SCREEN_X) {
     return;
   }
   int index = SCREEN_LOC(x,y);
-  screen[SCREEN_INT_POSITION(index)] |= SCREEN_BIT(index);
+  switch(screenNum) {
+    case 1:
+      screen1[SCREEN_INT_POSITION(index)] |= SCREEN_BIT(index);
+      break;
+    case 2:
+      screen2[SCREEN_INT_POSITION(index)] |= SCREEN_BIT(index);
+      break;
+    default:
+      return;
+  }
 }
 
-inline void clearPixel(int x, int y) {
+inline void clearPixel(int x, int y, int screenNum) {
   if (x < 0 || y < 0 || x >= SCREEN_X || y >= SCREEN_X) {
     return;
   }
   int index = SCREEN_LOC(x,y);
-  screen[SCREEN_INT_POSITION(index)] &= ~SCREEN_BIT(index);
+  switch(screenNum) {
+    case 1:
+      screen1[SCREEN_INT_POSITION(index)] &= ~SCREEN_BIT(index);
+      break;
+    case 2:
+      screen2[SCREEN_INT_POSITION(index)] &= ~SCREEN_BIT(index);
+      break;
+    default:
+      return;
+  }
 }
 
 inline void clearScreen() {
   
   for(int i = 0; i < SCREEN_SIZE(SCREEN_X,SCREEN_Y); i++) {
-    screen[i] = 0;
+    screen1[i] = 0;
+    screen2[i] = 0;
   }
 }
 
-inline bool queryScreen(int x, int y) {
+inline bool queryScreen(int x, int y, int screenNum) {
   int index = SCREEN_LOC(x,y);
-  return screen[SCREEN_INT_POSITION(index)] & SCREEN_BIT(index);
+  switch(screenNum) {
+    case 1:
+      return screen1[SCREEN_INT_POSITION(index)] & SCREEN_BIT(index);
+      break;
+    case 2:
+      return screen2[SCREEN_INT_POSITION(index)] & SCREEN_BIT(index);
+      break;
+    default:
+      return false;
+  }  
+}
+
+void drawLine(FixedPoint x1FP, FixedPoint y1FP, FixedPoint x2FP, FixedPoint y2FP) {
+  x1FP = MULT(x1FP, SCREEN_SCALE);
+  y1FP = MULT(y1FP, SCREEN_SCALE);
+  x2FP = MULT(x2FP, SCREEN_SCALE);
+  y2FP = MULT(y2FP, SCREEN_SCALE);
+  
+  FixedPoint deltaX = x2FP - x1FP;
+  FixedPoint deltaY = y2FP - y1FP;
+
+  FixedPoint xSteps = ABS(deltaX);
+  FixedPoint ySteps = ABS(deltaY);
+
+  FixedPoint dX, dY;
+  FixedPoint x = x1FP;
+  FixedPoint y = y1FP;
+
+  FixedPoint steps;
+  if(xSteps > ySteps) {
+    steps = xSteps;
+  } else {
+    steps = ySteps;
+  }
+  dX = DIV(deltaX,steps);
+  dY = DIV(deltaY,steps);
+  for(int i = 0; i < TO_INT(steps); i++) {
+    setPixel(x,y,2);
+    x+=dX;
+    y+=dY;
+  }
 }
 
 void drawCircle(FixedPoint xFP, FixedPoint yFP, FixedPoint rFP) {
@@ -133,8 +193,9 @@ void drawScreen() {
     Serial.print('|');
     for (int x = 0; x < SCREEN_X; x++) {
       //Serial.println(arrayLoc);
-      if(queryScreen(x,y)) {
-        //Serial.print('*');
+      if(queryScreen(x,y,2)) {
+        Serial.print('0');        
+      } else if (queryScreen(x,y,1)) {
         Serial.print('*');
       } else {
         //Serial.print(' ');
@@ -168,6 +229,11 @@ void render(const Simulation& sim) {
 #endif
     if (sim.m_worldObjects[i].m_inUse) {
       objectDraw(sim.m_worldObjects[i]);
+    }
+  }
+  for (int i = 0; i < NUM_CONSTRAINTS; i++) {
+    if (sim.m_worldConstraints[i].m_generator != NULL) {
+      drawLine(sim.m_worldConstraints[i].m_obj1->m_position.m_x, sim.m_worldConstraints[i].m_obj1->m_position.m_y, sim.m_worldConstraints[i].m_obj2->m_position.m_x, sim.m_worldConstraints[i].m_obj2->m_position.m_y);
     }
   }
   Serial.println();

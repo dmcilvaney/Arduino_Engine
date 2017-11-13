@@ -100,7 +100,7 @@ void setup() {
 #endif
 }
 
-
+#ifndef TESTMODE
 Vector3D calculateLeverVector() {
   return rodEnd->m_position - pivotObj->m_position;
 }
@@ -155,6 +155,7 @@ FixedPoint calculateSpringStrength() {
   //Vary length between 5cm and 50cm
   return FROM_INT_SHIFT(map(a,1023,0,100,300),1);
 }
+#endif
 
 
 #define FSR_MEASUREMENTS 2
@@ -236,6 +237,10 @@ void test() {
   vTwo.print();
   vNeg = vNeg + (vTwo * -ONE);
   vNeg.print();
+
+  Serial.println("ABS");
+  Serial.println(TO_STRING(ABS(FROM_INT(-5))));
+  Serial.println(TO_STRING(ABS(FROM_INT(-5) + FROM_INT(3))));
 
   Serial.println();
   

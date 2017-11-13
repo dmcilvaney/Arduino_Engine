@@ -63,7 +63,7 @@ inline FixedPoint fp_fromIntShift(int64_t a, int decimalShift);
 
 #define MULT(a,b) fp_multiply(a, b)
 #define DIV(a,b) fp_divide(a, b)
-#define ABS(a) (a > 0 ? a : a * -1)
+#define ABS(a) fp_ABS(a)
 #define FROM_INT(a) (((FixedPoint)a) << SHIFT_VAL)
 #define FROM_INT_SHIFT(a,decimalShift) (fp_fromIntShift(a,decimalShift))
 #define FROM_FLOAT(a) ((FixedPoint)(a * ((FixedPoint)1 << SHIFT_VAL)))
@@ -118,6 +118,10 @@ String format64(int64_t val) {
     *(--p) = '-';
   }
   return String(p);
+}
+
+inline FixedPoint fp_abs(FixedPoint a) {
+  return (a > 0 ? a : a * -1);
 }
 
 inline FixedPoint fp_multiply(FixedPoint m1, FixedPoint m2) {

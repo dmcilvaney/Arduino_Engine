@@ -17,7 +17,7 @@ typedef float FixedPoint;
 
 #define MULT(a,b) (a*b)
 #define DIV(a,b) (a/b)
-#define ABS(a) (a > 0 ? a : a * -1)
+#define ABS(a) fp_abs(a)
 #define FROM_INT(a) ((float)a)
 #define FROM_INT_SHIFT(a,decimalShift) (fp_fromIntShift(a,decimalShift))
 #define FROM_FLOAT(a) (a)
@@ -57,6 +57,10 @@ String format64(float val) {
   return String(p);
   */
   return String(val);
+}
+
+inline FixedPoint fp_abs(FixedPoint a) {
+  return (a > 0 ? a : a * -1);
 }
 
 inline FixedPoint fp_fromIntShift(FixedPoint a, FixedPoint decimalShift) {
